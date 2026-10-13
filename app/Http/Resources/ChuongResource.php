@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ChuongResource extends JsonResource
+class ChapterResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,7 +18,7 @@ class ChuongResource extends JsonResource
             'id'        => $this->id,
             'tenChuong' => $this->tenChuong,
             'monHocId'  => $this->monHocId,
-            'monHoc'    => new MonHocResource($this->whenLoaded('monHoc')),
+            'monHoc'    => new SubjectResource($this->whenLoaded('monHoc')),
             'isDeleted' => $this->isDeleted,
         ];
     }

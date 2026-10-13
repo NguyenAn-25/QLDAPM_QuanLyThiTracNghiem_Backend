@@ -13,15 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('phan_congs', function (Blueprint $table) {
-            //khóa ngoại
-            $table->foreignId('giangVienId')
-                ->constrained('users');
-
-            $table->foreignId('monHocId')
-                ->constrained('mon_hocs');
-
-            $table->primary(['giangVienId', 'monHocId']);
+        Schema::create('teacher_subjects', function (Blueprint $table) {
+            $table->foreignId('teacher_id')->constrained('users');
+            $table->foreignId('subject_id')->constrained('subjects');
+            $table->primary(['teacher_id', 'subject_id']);
         });
     }
 
@@ -32,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('phan_congs');
+        Schema::dropIfExists('teacher_subjects');
     }
 };

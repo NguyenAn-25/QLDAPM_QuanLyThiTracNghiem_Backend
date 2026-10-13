@@ -13,22 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('giao_bai_this', function (Blueprint $table) {
-            // foreign key tới bảng đề thi
-            $table->foreignId('deThiId')
-                ->constrained('de_this');
-
-            // foreign key tới bảng nhóm học phần
-            $table->foreignId('nhomHocPhanId')
-                ->constrained('nhom_hoc_phans');
-
-            $table->dateTime('thoiGianBatDau');
-            $table->dateTime('thoiGianKetThuc');
-
-            // primary key kép
-            $table->primary(['deThiId', 'nhomHocPhanId']);
-
-
+        Schema::create('exam_assignments', function (Blueprint $table) {
+            $table->foreignId('exam_id')->constrained('exams');
+            $table->foreignId('course_group_id')->constrained('course_groups');
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->primary(['exam_id', 'course_group_id']);
         });
     }
 
@@ -39,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('giao_bai_this');
+        Schema::dropIfExists('exam_assignments');
     }
 };

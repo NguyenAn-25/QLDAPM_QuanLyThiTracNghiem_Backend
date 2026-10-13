@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserService
 {
@@ -34,16 +33,16 @@ class UserService
         return $user->delete();
     }
 
-    public function changepassword(array $data, User $user)
+    public function changePassword(array $data, User $user)
     {
-        $currentPassword = $data["currentPassword"];
-        $newPassword = $data["newPassword"];
+        $currentPassword = $data["current_password"];
+        $newPassword = $data["new_password"];
 
         $userPassword = $user->password;
         //validate
         if (!Hash::check($currentPassword, $userPassword)) {
             throw ValidationException::withMessages([
-                'currentPassword' => ['Mật khẩu cũ không khớp'],
+                'current_password' => ['The old password does not match'],
             ]);
         }
         //update
@@ -54,18 +53,18 @@ class UserService
         return $user->update($dataUpdate);
     }
 
-    public function resetpassword(array $data, User $user)
+    public function resetPassword(array $data, User $user): bool
     {
         $dataUpdate = [
-            "password" => $data["newPassword"], //tự hash trong modal rồi
+            "password" => $data["new_password"], // tự hash trong model rồi (đồng bộ key sang snake_case)
         ];
 
         return $user->update($dataUpdate);
     }
 
-    public function getgiangvien()
+    public function getTeachers()
     {
-        $users = User::where('isStudent', false)
+        $users = User::where('is_student', false)
             ->where('username', '!=', 'Admin')
             ->get();
 

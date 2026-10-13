@@ -2,33 +2,34 @@
 
 namespace App\Services;
 
-use App\Models\BaiLam;
-use App\Models\LogBaiLam;
+use App\Models\ExamAttempt;
+use App\Models\ExamAttemptLog;
 
-class LogBaiLamService{
+class ExamAttemptLogService
+{
     public function getAll()
     {
-        return LogBaiLam::all();
+        return ExamAttemptLog::all();
     }
 
-    public function getOne(LogBaiLam $logBaiLam)
+    public function getOne(ExamAttemptLog $examAttemptLog)
     {
-        return $logBaiLam;
+        return $examAttemptLog;
     }
 
     public function add(array $data)
     {
-        return LogBaiLam::create($data);
+        return ExamAttemptLog::create($data);
     }
 
-    public function update(array $data, BaiLam $bailam)
+    public function update(array $data, ExamAttempt $examAttempt): int
     {
-        return LogBaiLam::where('baiLamId', $bailam->id)
-        ->update($data);
+        return ExamAttemptLog::where('exam_attempt_id', $examAttempt->id)
+            ->update($data);
     }
 
-    public function delete(LogBaiLam $logBaiLam)
+    public function delete(ExamAttemptLog $examAttemptLog)
     {
-        return $logBaiLam->delete();
+        return $examAttemptLog->delete();
     }
 }

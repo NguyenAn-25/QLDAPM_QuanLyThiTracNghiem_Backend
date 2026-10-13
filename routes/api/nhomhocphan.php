@@ -1,27 +1,29 @@
 <?php
 
-use App\Http\Controllers\NhomHocPhanController;
+use App\Http\Controllers\CourseGroupController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/course-groups', [CourseGroupController::class, 'index']);
+Route::get('/course-groups/{courseGroup}', [CourseGroupController::class, 'show']);
+Route::post('/course-groups', [CourseGroupController::class, 'store']);
+Route::put('/course-groups/{courseGroup}', [CourseGroupController::class, 'update']);
+Route::delete('/course-groups/{courseGroup}', [CourseGroupController::class, 'destroy']);
 
-Route::get('/nhomhocphans', [NhomHocPhanController::class, 'index']);
-Route::get('/nhomhocphans/{nhomhocphan}', [NhomHocPhanController::class, 'show']);
-Route::post('/nhomhocphans', [NhomHocPhanController::class, 'store']);
-Route::put('/nhomhocphans/{nhomhocphan}', [NhomHocPhanController::class, 'update']);
-Route::delete('/nhomhocphans/{nhomhocphan}', [NhomHocPhanController::class, 'destroy']);
-Route::patch('/nhomhocphans/hidden/{nhomhocphan}', [NhomHocPhanController::class, 'hidden']);
-Route::get('/nhomhocphans/o_svien/{user}', [NhomHocPhanController::class, 'get_o_svien']);
-Route::get('/nhomhocphans/get_danh_sach_sinh_vien/{nhomhocphan}', [NhomHocPhanController::class, 'get_danh_sach_sinh_vien']);
-Route::get('/nhomhocphans/sinh_vien_export/{nhomhocphan}', [NhomHocPhanController::class, 'sinhVienExport']);
-Route::post('/nhomhocphans/sinh_vien_import/{nhomhocphan}', [NhomHocPhanController::class, 'sinhVienImport']);
-Route::post('/nhomhocphans/add_sinh_vien_to_nhom/{nhomhocphan}', [NhomHocPhanController::class, 'add_sinh_vien_to_nhom']);
-Route::get('/nhomhocphans/w_gvien_mon/{nhomhocphan}', [NhomHocPhanController::class, 'get_w_gvien_mon']);
-Route::get('/nhomhocphans/w_dekiemtra/{nhomhocphan}', [NhomHocPhanController::class, 'get_w_dekiemtra']);
-Route::post('/nhomhocphans/join_group', [NhomHocPhanController::class, 'join_group']);
-Route::patch('/nhomhocphans/reset_invite_code/{nhomhocphan}', [NhomHocPhanController::class, 'resetInviteCode']);
-Route::get('/nhomhocphans/assigned/{user}', [NhomHocPhanController::class, 'getAssignedTeaching']);
-Route::delete('/nhomhocphans/{nhomhocphan}/sinh-vien', [NhomHocPhanController::class, 'remove_sinh_vien_from_nhom']);
-Route::get('/nhomhocphans/w_tbao/{nhomhocphan}', [NhomHocPhanController::class, 'get_with_tbao']);
-Route::get('/nhomhocphans/detailsinhvien/{nhomhocphan}', [NhomHocPhanController::class, 'get_for_detail_sv']);
-Route::get('/nhomhocphans/get_o_gvien/{user}', [NhomHocPhanController::class, 'get_o_gvien']);
+Route::patch('/course-groups/hidden/{courseGroup}', [CourseGroupController::class, 'hide']);
+Route::post('/course-groups/join', [CourseGroupController::class, 'joinGroup']);
+Route::patch('/course-groups/invite-code/{courseGroup}', [CourseGroupController::class, 'resetInviteCode']);
 
+Route::get('/course-groups/student/{user}', [CourseGroupController::class, 'getByStudent']);
+Route::get('/course-groups/teacher/{user}', [CourseGroupController::class, 'getByTeacher']);
+Route::get('/course-groups/assigned/{user}', [CourseGroupController::class, 'getAssignedTeaching']);
+
+Route::get('/course-groups/{courseGroup}/students', [CourseGroupController::class, 'getStudentList']);
+Route::get('/course-groups/{courseGroup}/students/export', [CourseGroupController::class, 'exportStudents']);
+Route::post('/course-groups/{courseGroup}/students/import', [CourseGroupController::class, 'importStudents']);
+Route::post('/course-groups/{courseGroup}/students', [CourseGroupController::class, 'addStudentToGroup']);
+Route::delete('/course-groups/{courseGroup}/students', [CourseGroupController::class, 'removeStudentFromGroup']);
+
+Route::get('/course-groups/{courseGroup}/teacher-subject', [CourseGroupController::class, 'getWithTeacherAndSubject']);
+Route::get('/course-groups/{courseGroup}/exams', [CourseGroupController::class, 'getWithExams']);
+Route::get('/course-groups/{courseGroup}/announcements', [CourseGroupController::class, 'getWithNotifications']);
+Route::get('/course-groups/{courseGroup}/student-detail', [CourseGroupController::class, 'getForStudentDetail']);

@@ -2,62 +2,62 @@
 
 namespace App\Services;
 
-use App\Models\MonHoc;
+use App\Models\Subject;
 use App\Models\User;
 
-class MonHocService
+class SubjectService
 {
     public function getAll()
     {
-        return MonHoc::all()->load("chuongs");
+        return Subject::all()->load("chuongs");
     }
 
-    public function getOne(MonHoc $monHoc)
+    public function getOne(Subject $subject)
     {
-        return $monHoc;
+        return $subject;
     }
 
     public function add(array $data)
     {
-        return MonHoc::create($data);
+        return Subject::create($data);
     }
 
-    public function update(array $data, MonHoc $monHoc)
+    public function update(array $data, Subject $subject)
     {
-        $monHoc->update($data);
-        return $monHoc;
+        $subject->update($data);
+        return $subject;
     }
 
-    public function delete(MonHoc $monHoc)
+    public function delete(Subject $subject)
     {
-        return $monHoc->delete();
+        return $subject->delete();
     }
 
-    public function get_w_nhp()
+    public function getWithCourseGroups()
     {
-        $monHocs = MonHoc::all();
-        $monHocs->load(['nhomHocPhans', 'chuongs']);
-        return $monHocs;
+        $subjects = Subject::all();
+        $subjects->load(['courseGroups', 'chapters']);
+        return $subjects;
     }
 
-    public function get_w_chuong()
+    public function getWithChapters()
     {
-        $monHoc = MonHoc::all();
-        $monHoc->load('chuongs');
-        return $monHoc;
+        $subject = Subject::all();
+        $subject->load('chapters');
+        return $subject;
     }
 
-    public function get_o_gvien(User $user)
+    public function getOfTeacher(User $user)
     {
-        // Lấy id các nhóm học phần giảng viên quản lý
-        $nhomIds = $user->quanLyNhomHocPhans->pluck('id');
+        // Get IDs of course groups managed by the teacher
+        $courseGroupIds = $user->managedCourseGroups->pluck('id');
 
-        $data = $user->monHocs()->with([
-            'nhomHocPhans' => function ($query) use ($nhomIds) {
-                $query->whereIn('id', $nhomIds);
+        $data = $user->assignedSubjects()->with([
+            'courseGroups' => function ($query) use ($courseGroupIds) {
+                $query->whereIn('id', $courseGroupIds);
             }
         ])->get();
 
-        return $data->load("chuongs");
+        return $data->load('chapters');
     }
 }

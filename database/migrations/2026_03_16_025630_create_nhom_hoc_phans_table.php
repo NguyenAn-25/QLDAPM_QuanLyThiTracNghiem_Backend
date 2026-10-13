@@ -13,30 +13,18 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('nhom_hoc_phans', function (Blueprint $table) {
+        Schema::create('course_groups', function (Blueprint $table) {
             $table->id();
-
-            $table->string('tenNhom', 100);
-
-            $table->string('maMoi', 20)->unique(); // mã mời
-
+            $table->string('group_name', 100);
+            $table->string('join_code', 20)->unique();
             $table->text('notes')->nullable();
-
-            $table->integer('hocKy');
-            $table->integer('namHoc');
-
-            $table->string('urlBackground')->default('default.png');
-
-            $table->integer('giangVienId');
-
-            $table->boolean('isHide')->default(false);
-            $table->boolean('isDeleted')->default(false); // xóa mềm
-
-            // $table->timestamps();
-
-            //foreign
-            $table->foreignId('monHocId')
-                ->constrained('mon_hocs');
+            $table->integer('semester');
+            $table->integer('academic_year');
+            $table->string('background_url')->default('default.png');
+            $table->foreignId('teacher_id')->constrained('users');
+            $table->boolean('is_hidden')->default(false);
+            $table->boolean('is_deleted')->default(false);
+            $table->foreignId('subject_id')->constrained('subjects');
         });
     }
 
@@ -47,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('nhom_hoc_phans');
+        Schema::dropIfExists('course_groups');
     }
 };

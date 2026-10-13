@@ -18,27 +18,25 @@ return new class extends Migration
             $table->id();
 
             $table->string('username');
-            $table->string('hoTen');
+            $table->string('full_name');
             $table->string('email')->unique();
             $table->string('password');
 
-            $table->integer('nhomQuyenId')->nullable();
-            $table->string('sdt', 20)->nullable();
+            $table->integer('role_id')->nullable();
+            $table->string('phone', 20)->nullable();
 
-            // Ngày sinh bỏ default, để nullable hoặc fill giá trị khi insert
-            $table->date('ngaySinh')->nullable();
+            $table->date('date_of_birth')->nullable();
 
-            $table->boolean('laGioiTinhNu');
+            $table->boolean('is_female');
 
             $table->text('ggid')->nullable();
-            $table->text('urlAvatar')->nullable();
+            $table->text('avatar_url')->nullable();
 
-            $table->boolean('isStudent');
-            $table->boolean('isLocked')->default(false);
-            $table->boolean('isDeleted')->default(false);
+            $table->boolean('is_student');
+            $table->boolean('is_locked')->default(false);
+            $table->boolean('is_deleted')->default(false);
 
-            // lastLogin dùng CURRENT_TIMESTAMP trong MySQL
-            $table->dateTime('lastLogin')->useCurrent();
+            $table->dateTime('last_login')->useCurrent();
 
             $table->timestamps();
 

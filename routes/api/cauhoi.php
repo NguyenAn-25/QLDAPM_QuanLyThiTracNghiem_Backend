@@ -1,16 +1,16 @@
 <?php
 
-use App\Http\Controllers\CauHoiController;
+use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/cauhois', [CauHoiController::class, 'index']);
-Route::get('/cauhois/all_public', [CauHoiController::class, 'getAllPublic']);
-Route::get('/cauhois/o_gvien/{user}', [CauHoiController::class, 'getAllOfUser']);
-Route::get('/cauhois/get_w_private/{user}', [CauHoiController::class, "getWithPrivate"]);
+Route::get('/questions', [QuestionController::class, 'index']);
+Route::get('/questions/all-public', [QuestionController::class, 'getAllPublic']);
+Route::get('/questions/teacher/{user}', [QuestionController::class, 'getAllOfUser']);
+Route::get('/questions/with-private/{user}', [QuestionController::class, "getWithPrivate"]);
 
-Route::get('/cauhois/{cauhoi}', [CauHoiController::class, 'show']);
-Route::post('/cauhois', [CauHoiController::class, 'store']);
-Route::put('/cauhois/{cauhoi}', [CauHoiController::class, 'update']);
-Route::delete('/cauhois/{cauhoi}', [CauHoiController::class, 'destroy']);
-Route::patch('/cauhois/{cauhoi}/status', [CauHoiController::class, 'changeStatus']);
-Route::post('/cauhois/{cauhoi}/copy', [CauHoiController::class, 'copyFromPublic']);
+Route::get('/questions/{question}', [QuestionController::class, 'show']);
+Route::post('/questions', [QuestionController::class, 'store']);
+Route::put('/questions/{question}', [QuestionController::class, 'update']);
+Route::delete('/questions/{question}', [QuestionController::class, 'destroy']);
+Route::patch('/questions/{question}/status', [QuestionController::class, 'changeStatus']);
+Route::post('/questions/{question}/copy', [QuestionController::class, 'copyFromPublic']);

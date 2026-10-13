@@ -2,39 +2,39 @@
 
 namespace App\Services;
 
-use App\Models\CauHinhThi;
+use App\Models\ExamConfiguration;
 
-class CauHinhThiService
+class ExamConfigurationService
 {
     public function getAll()
     {
-        return CauHinhThi::with('deThi')->get();
+        return ExamConfiguration::with('exam')->get();
     }
 
-    public function getOne(CauHinhThi $cauHinhThi): CauHinhThi
+    public function getOne(ExamConfiguration $examConfiguration): ExamConfiguration
     {
-        return $cauHinhThi->load('deThi');
+        return $examConfiguration->load('exam');
     }
 
-    public function create(array $data): CauHinhThi
+    public function create(array $data): ExamConfiguration
     {
-        $cauHinhThi = CauHinhThi::create($data);
-        return $cauHinhThi->load('deThi');
+        $examConfiguration = ExamConfiguration::create($data);
+        return $examConfiguration->load('exam');
     }
 
-    public function update(CauHinhThi $cauHinhThi, array $data): CauHinhThi
+    public function update(ExamConfiguration $examConfiguration, array $data): ExamConfiguration
     {
-        $cauHinhThi->update($data);
-        return $cauHinhThi->load('deThi');
+        $examConfiguration->update($data);
+        return $examConfiguration->load('exam');
     }
 
-    public function delete(CauHinhThi $cauHinhThi): bool
+    public function delete(ExamConfiguration $examConfiguration): bool
     {
-        return (bool) $cauHinhThi->delete();
+        return (bool) $examConfiguration->delete();
     }
 
-    public function findByDeThiId(int $deThiId): ?CauHinhThi
+    public function findByExamId(int $examId): ?ExamConfiguration
     {
-        return CauHinhThi::where('deThiId', $deThiId)->first();
+        return ExamConfiguration::where('exam_id', $examId)->first();
     }
 }

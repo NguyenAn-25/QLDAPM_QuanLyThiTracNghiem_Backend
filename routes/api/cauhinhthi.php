@@ -1,10 +1,29 @@
 <?php
 
-use App\Http\Controllers\CauHinhThiController;
+use App\Http\Controllers\ExamConfigurationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/cauhinhthis', [CauHinhThiController::class, 'index']);
-Route::get('/cauhinhthis/{cauhinhthi}', [CauHinhThiController::class, 'show']);
-Route::post('/cauhinhthis', [CauHinhThiController::class, 'store']);
-Route::put('/cauhinhthis/{cauhinhthi}', [CauHinhThiController::class, 'update']);
-Route::delete('/cauhinhthis/{cauhinhthi}', [CauHinhThiController::class, 'destroy']);
+Route::get('/exam-configurations', [
+    ExamConfigurationController::class,
+    'index',
+]);
+
+Route::post('/exam-configurations', [
+    ExamConfigurationController::class,
+    'store',
+]);
+
+Route::get('/exam-configurations/{examConfiguration}', [
+    ExamConfigurationController::class,
+    'show',
+]);
+
+Route::put('/exam-configurations/{examConfiguration}', [
+    ExamConfigurationController::class,
+    'update',
+]);
+
+Route::delete('/exam-configurations/{examConfiguration}', [
+    ExamConfigurationController::class,
+    'destroy',
+]);

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ChangeCauHoiStatusRequest extends FormRequest
+class ChangeQuestionStatusRequest extends FormRequest
 {
     public function authorize()
     {

@@ -13,15 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('chuongs', function (Blueprint $table) {
+        Schema::create('chapters', function (Blueprint $table) {
             $table->id();
-            $table->string('tenChuong', 100);
-            $table->unsignedBigInteger('monHocId');
-            $table->boolean('isDeleted')->default(false);
-
-            $table->foreign('monHocId')
-                ->references('id')->on('mon_hocs')
-                ->onDelete('cascade');
+            $table->string('chapter_name', 100);
+            $table->unsignedBigInteger('subject_id');
+            $table->boolean('is_deleted')->default(false);
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
         });
     }
 
@@ -32,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chuongs');
+        Schema::dropIfExists('chapters');
     }
 };

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-// use App\Models\User;
-
 use App\Http\Requests\ChangePassWordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\StoreUserRequest;
@@ -104,18 +102,18 @@ class UserController extends Controller
         return $this->success($data);
     }
 
-    public function changepassword(ChangePassWordRequest $request, User $user){
-        $data = $this->userService->changepassword($request->validated(), $user);
+    public function changePassword(ChangePassWordRequest $request, User $user){
+        $data = $this->userService->changePassword($request->validated(), $user);
         return $this->success($data);
     }
 
-    public function resetpassword(ResetPasswordRequest $request, User $user){
-        $data = $this->userService->resetpassword($request->validated(), $user);
+    public function resetPassword(ResetPasswordRequest $request, User $user){
+        $data = $this->userService->resetPassword($request->validated(), $user);
         return $this->success($data);
     }
 
-    public function getgiangvien(){
-        $data = $this->userService->getgiangvien();
+    public function getTeachers(){
+        $data = $this->userService->getTeachers();
         return $this->success($data);
     }
 }

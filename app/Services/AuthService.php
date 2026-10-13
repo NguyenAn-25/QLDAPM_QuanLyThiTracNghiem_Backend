@@ -94,8 +94,8 @@ class AuthService
         }
 
         $googleId = $googleUser->getId();
-        if (!$user->ggid && $googleId) {
-            $user->ggid = $googleId;
+        if (!$user->google_id && $googleId) { // NOTE: $user->ggid -> $user->google_id
+            $user->google_id = $googleId;      // NOTE: ggid -> google_id
             $user->save();
             $user->refresh();
         }
@@ -103,7 +103,7 @@ class AuthService
         $token = Auth::guard('api')->login($user);
 
         if (!$token) {
-            return(["error" => "login_failed"]);
+            return (["error" => "login_failed"]);
         }
 
         $role = $user->nhomQuyenId ? $this->roleService->getRoleDetailById($user->nhomQuyenId) : null;
@@ -144,7 +144,8 @@ class AuthService
         ]);
     }
 
-    public function setAuthCookie(Request $request){
+    public function setAuthCookie(Request $request)
+    {
         $token = $request->input('access_token');
 
         Log::info($token);

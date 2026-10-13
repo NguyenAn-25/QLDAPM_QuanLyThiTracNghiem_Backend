@@ -3,21 +3,21 @@
 namespace App\Services;
 
 use App\Exceptions\BusinessException;
-use App\Models\CauHoi;
-use App\Models\Chuong;
+use App\Models\Chapter;
+use App\Models\Question;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
-class CauHoiService
+class QuestionService
 {
     public function getAll(array $filters = [])
     {
-        $query = CauHoi::query()
-            ->with(['monHoc', 'chuong', 'doKho', 'nguoiTao', 'cauTraLois'])
-            ->withCount('deThis')
-            ->where('isDeleted', false)
+        $query = Question::query()
+            ->with(['subject', 'chapter', 'difficulty', 'creator', 'answerOptions'])
+            ->withCount('exams')
+            ->where('is_deleted', false)
             ->where('status', 'public');
 
         $this->applyFilters($query, $filters);
@@ -29,103 +29,104 @@ class CauHoiService
 
     public function getWithPrivate(int $userId)
     {
-        return CauHoi::query()
-            ->with(['monHoc', 'chuong', 'doKho', 'nguoiTao', 'cauTraLois'])
-            ->withCount('deThis')
-            ->where('isDeleted', false)
+        return Question::query()
+            ->with(['subject', 'chapter', 'difficulty', 'creator', 'answerOptions'])
+            ->withCount('exams')
+            ->where('is_deleted', false)
             ->where('status', 'private')
-            ->where('nguoiTaoId', $userId)
+            ->where('creator_id', $userId)
             ->orderByDesc('created_at')
             ->get();
     }
 
-    public function getOne(CauHoi $cauHoi)
+    public function getOne(Question $question)
     {
-        return $cauHoi
-            ->load(['cauTraLois', 'monHoc', 'chuong', 'doKho', 'nguoiTao'])
-            ->loadCount('deThis');
+        return $question
+            ->load(['answerOptions', 'subject', 'chapter', 'difficulty', 'creator'])
+            ->loadCount('exams');
     }
 
     public function add(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $answers = Arr::pull($data, 'cauTraLois', []);
+            $answerOptions = Arr::pull($data, 'answerOptions', []);
 
             $this->validateReferenceConsistency($data);
 
-            $cauHoi = CauHoi::create($data);
+            $question = Question::create($data);
 
-            $cauHoi->cauTraLois()->createMany($answers);
+            $question->answerOptions()->createMany($answerOptions);
 
-            return $this->getOne($cauHoi);
+            return $this->getOne($question);
         });
     }
 
-    public function update(array $data, CauHoi $cauHoi)
+    public function update(array $data, Question $question)
     {
-        return DB::transaction(function () use ($data, $cauHoi) {
-            $answers = Arr::pull($data, 'cauTraLois', null);
+        return DB::transaction(function () use ($data, $question) {
+            $answerOptions = Arr::pull($data, 'answerOptions', null);
 
-            $mergedData = array_merge($cauHoi->only(['monHocId', 'chuongId']), $data);
+            $mergedData = array_merge($question->only(['subject_id', 'chapter_id']), $data);
             $this->validateReferenceConsistency($mergedData);
 
             if (!empty($data)) {
-                $cauHoi->update($data);
+                $question->update($data);
             }
 
-            if (is_array($answers)) {
-                $this->syncAnswers($cauHoi, $answers);
+            if (is_array($answerOptions)) {
+                $this->syncAnswers($question, $answerOptions);
             }
 
-            return $this->getOne($cauHoi->refresh());
+            return $this->getOne($question->refresh());
         });
     }
 
-    public function delete(CauHoi $cauHoi)
+    public function delete(Question $question)
     {
-        $cauHoi->update(['isDeleted' => true]);
+        $question->update(['is_deleted' => true]);
         return true;
     }
 
-    public function changeStatus(CauHoi $cauHoi, string $status)
+    public function changeStatus(Question $question, string $status)
     {
-        $cauHoi->update(['status' => $status]);
-        return $this->getOne($cauHoi->refresh());
+        $question->update(['status' => $status]);
+        return $this->getOne($question->refresh());
     }
 
-    public function copyFromPublic(CauHoi $source, int $nguoiTaoId)
+    public function copyFromPublic(Question $source, int $creatorId)
     {
         if ($source->status !== 'public') {
-            throw new BusinessException('Chỉ được sao chép từ câu hỏi công khai', 422);
+            throw new BusinessException('Can only copy from public questions', 422);
         }
 
-        return DB::transaction(function () use ($source, $nguoiTaoId) {
-            $source->load('cauTraLois');
-            $source->increment('soLuotSuDung');
+        return DB::transaction(function () use ($source, $creatorId) {
+            $source->load('answerOptions');
+            $source->increment('usage_count');
+
             $newQuestionData = [
-                'monHocId' => $source->monHocId,
-                'chuongId' => $source->chuongId,
-                'noiDungCauHoi' => $source->noiDungCauHoi,
-                'doKhoId' => $source->doKhoId,
-                'imageUrl' => $source->imageUrl,
-                'giaiThichDapAn' => $source->giaiThichDapAn,
-                'diemMacDinh' => $source->diemMacDinh,
-                'nguoiTaoId' => $nguoiTaoId,
-                'soLuotSuDung' => 0,
-                'status' => 'private',
-                'isDeleted' => false,
+                'subject_id'         => $source->subject_id,
+                'chapter_id'         => $source->chapter_id,
+                'question_content'   => $source->question_content,
+                'difficulty_id'      => $source->difficulty_id,
+                'image_url'          => $source->image_url,
+                'answer_explanation' => $source->answer_explanation,
+                'default_score'      => $source->default_score,
+                'creator_id'         => $creatorId,
+                'usage_count'        => 0,
+                'status'             => 'private',
+                'is_deleted'         => false,
             ];
 
-            $newQuestion = CauHoi::create($newQuestionData);
+            $newQuestion = Question::create($newQuestionData);
 
-            $answers = $source->cauTraLois->map(function ($answer) {
+            $answerOptions = $source->answerOptions->map(function ($answer) {
                 return [
-                    'noiDungLuaChon' => $answer->noiDungLuaChon,
-                    'isCorrectAnswer' => $answer->isCorrectAnswer,
+                    'option_content'    => $answer->option_content,
+                    'is_correct_answer' => $answer->is_correct_answer,
                 ];
             })->values()->all();
 
-            $newQuestion->cauTraLois()->createMany($answers);
+            $newQuestion->answerOptions()->createMany($answerOptions);
 
             return $this->getOne($newQuestion);
         });
@@ -133,33 +134,33 @@ class CauHoiService
 
     public function getById(int $id)
     {
-        $cauHoi = CauHoi::findOrFail($id);
-        return $cauHoi;
+        $question = Question::findOrFail($id);
+        return $question;
     }
 
-    public function getCauTraLois(int $id)
+    public function getAnswers(int $id)
     {
-        $cauHoi = CauHoi::findOrFail($id);
-        $cauHoi->load('cauTraLois');
-        return $cauHoi->cauTraLois;
+        $question = Question::findOrFail($id);
+        $question->load('answerOptions');
+        return $question->answerOptions;
     }
 
     private function applyFilters(Builder $query, array $filters): void
     {
-        if (!empty($filters['monHocId'])) {
-            $query->where('monHocId', $filters['monHocId']);
+        if (!empty($filters['subject_id'])) {
+            $query->where('subject_id', $filters['subject_id']);
         }
 
-        if (!empty($filters['doKhoId'])) {
-            $query->where('doKhoId', $filters['doKhoId']);
+        if (!empty($filters['difficulty_id'])) {
+            $query->where('difficulty_id', $filters['difficulty_id']);
         }
 
-        if (!empty($filters['chuongId'])) {
-            $query->where('chuongId', $filters['chuongId']);
+        if (!empty($filters['chapter_id'])) {
+            $query->where('chapter_id', $filters['chapter_id']);
         }
 
-        if (!empty($filters['nguoiTaoId'])) {
-            $query->where('nguoiTaoId', $filters['nguoiTaoId']);
+        if (!empty($filters['creator_id'])) {
+            $query->where('creator_id', $filters['creator_id']);
         }
 
         if (!empty($filters['status'])) {
@@ -169,10 +170,10 @@ class CauHoiService
         if (!empty($filters['keyword'])) {
             $keyword = trim((string) $filters['keyword']);
             $query->where(function (Builder $inner) use ($keyword) {
-                $inner->where('noiDungCauHoi', 'like', "%{$keyword}%")
-                    ->orWhere('giaiThichDapAn', 'like', "%{$keyword}%")
-                    ->orWhereHas('cauTraLois', function (Builder $answerQuery) use ($keyword) {
-                        $answerQuery->where('noiDungLuaChon', 'like', "%{$keyword}%");
+                $inner->where('question_content', 'like', "%{$keyword}%")
+                    ->orWhere('answer_explanation', 'like', "%{$keyword}%")
+                    ->orWhereHas('answerOptions', function (Builder $answerQuery) use ($keyword) {
+                        $answerQuery->where('option_content', 'like', "%{$keyword}%");
                     });
             });
         }
@@ -182,77 +183,77 @@ class CauHoiService
                 $query->where('status', 'public');
             }
 
-            if ($filters['bank'] === 'personal' && !empty($filters['nguoiTaoId'])) {
-                $query->where('nguoiTaoId', $filters['nguoiTaoId']);
+            if ($filters['bank'] === 'personal' && !empty($filters['creator_id'])) {
+                $query->where('creator_id', $filters['creator_id']);
             }
         }
     }
 
-    private function syncAnswers(CauHoi $cauHoi, array $answers): void
+    private function syncAnswers(Question $question, array $answerOptions): void
     {
         $answerIds = [];
 
-        foreach ($answers as $answer) {
+        foreach ($answerOptions as $answer) {
             if (!empty($answer['id'])) {
-                $cauTraLoi = $cauHoi->cauTraLois()->where('id', $answer['id'])->first();
-                if ($cauTraLoi) {
-                    $cauTraLoi->update([
-                        'noiDungLuaChon' => $answer['noiDungLuaChon'],
-                        'isCorrectAnswer' => $answer['isCorrectAnswer'],
+                $answerModel = $question->answerOptions()->where('id', $answer['id'])->first();
+                if ($answerModel) {
+                    $answerModel->update([
+                        'option_content'    => $answer['option_content'],
+                        'is_correct_answer' => $answer['is_correct_answer'],
                     ]);
-                    $answerIds[] = $cauTraLoi->id;
+                    $answerIds[] = $answerModel->id;
                     continue;
                 }
             }
 
-            $newAnswer = $cauHoi->cauTraLois()->create([
-                'noiDungLuaChon' => $answer['noiDungLuaChon'],
-                'isCorrectAnswer' => $answer['isCorrectAnswer'],
+            $newAnswer = $question->answerOptions()->create([
+                'option_content'    => $answer['option_content'],
+                'is_correct_answer' => $answer['is_correct_answer'],
             ]);
             $answerIds[] = $newAnswer->id;
         }
 
-        $cauHoi->cauTraLois()->whereNotIn('id', $answerIds)->delete();
+        $question->answerOptions()->whereNotIn('id', $answerIds)->delete();
     }
 
     private function validateReferenceConsistency(array $data): void
     {
-        if (empty($data['chuongId']) || empty($data['monHocId'])) {
+        if (empty($data['chapter_id']) || empty($data['subject_id'])) {
             return;
         }
 
-        $belongsToMonHoc = Chuong::query()
-            ->where('id', $data['chuongId'])
-            ->where('monHocId', $data['monHocId'])
+        $belongsToSubject = Chapter::query()
+            ->where('id', $data['chapter_id'])
+            ->where('subject_id', $data['subject_id'])
             ->exists();
 
-        if (!$belongsToMonHoc) {
-            throw new \InvalidArgumentException('Chương không thuộc môn học đã chọn');
+        if (!$belongsToSubject) {
+            throw new \InvalidArgumentException('Chapter does not belong to the selected subject');
         }
     }
 
     public function getAllPublic()
     {
-        return CauHoi::where('status', 'public')->get()->load(
+        return Question::where('status', 'public')->get()->load(
             [
-                "monHoc",
-                "chuong",
-                "doKho",
-                "nguoiTao",
-                "cauTraLois"
+                "subject",
+                "chapter",
+                "difficulty",
+                "creator",
+                "answerOptions"
             ]
         );
     }
 
     public function getAllOfUser(User $user)
     {
-        return CauHoi::where('nguoiTaoId', $user->id)->get()->load(
+        return Question::where('creator_id', $user->id)->get()->load(
             [
-                "monHoc",
-                "chuong",
-                "doKho",
-                "nguoiTao",
-                "cauTraLois"
+                "subject",
+                "chapter",
+                "difficulty",
+                "creator",
+                "answerOptions"
             ]
         );
     }

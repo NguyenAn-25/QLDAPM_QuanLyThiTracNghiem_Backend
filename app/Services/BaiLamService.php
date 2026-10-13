@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Jobs\SubmitTestJob;
-use App\Models\BaiLam;
-use App\Models\CauHoi;
-use App\Models\DeThi;
-use App\Models\NhomHocPhan;
+use App\Models\CourseGroup;
+use App\Models\Exam;
+use App\Models\ExamAttempt;
+use App\Models\Question;
 use App\Models\User;
 use DateTime;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,111 +15,112 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class BaiLamService
+class ExamAttemptService
 {
-    private LogBaiLamService $logBaiLamService;
-    private ChiTietBaiLamService $chiTietBaiLamService;
-    private DeThiService $deThiService;
-    private CauHoiService $cauHoiService;
-    private ChiTietDeThiService $chiTietDeThiService;
+    private ExamAttemptLogService $examAttemptLogService;
+    private ExamAttemptAnswerService $examAttemptAnswerService;
+    private ExamService $examService;
+    private QuestionService $questionService;
+    private ExamQuestionService $examQuestionService;
 
-    public function __construct(LogBaiLamService $logBaiLamService, ChiTietBaiLamService $chiTietBaiLamService, DeThiService $deThiService, CauHoiService $cauHoiService, ChiTietDeThiService $chiTietDeThiService)
-    {
-        $this->logBaiLamService = $logBaiLamService;
-        $this->chiTietBaiLamService = $chiTietBaiLamService;
-        $this->deThiService = $deThiService;
-        $this->cauHoiService = $cauHoiService;
-        $this->chiTietDeThiService = $chiTietDeThiService;
+    public function __construct(
+        ExamAttemptLogService $examAttemptLogService,
+        ExamAttemptAnswerService $examAttemptAnswerService,
+        ExamService $examService,
+        QuestionService $questionService,
+        ExamQuestionService $examQuestionService
+    ) {
+        $this->examAttemptLogService = $examAttemptLogService;
+        $this->examAttemptAnswerService = $examAttemptAnswerService;
+        $this->examService = $examService;
+        $this->questionService = $questionService;
+        $this->examQuestionService = $examQuestionService;
     }
 
     public function getAll()
     {
-        return BaiLam::all();
+        return ExamAttempt::all();
     }
 
-    public function getOne(BaiLam $baiLam)
+    public function getOne(ExamAttempt $examAttempt)
     {
-        return $this->reviewresultbyid($baiLam->id);
-        // return $baiLam;
+        return $this->reviewResultById($examAttempt->id);
     }
 
     public function add(array $data)
     {
-        return BaiLam::create($data);
+        return ExamAttempt::create($data);
     }
 
-    public function update(array $data, BaiLam $baiLam)
+    public function update(array $data, ExamAttempt $examAttempt)
     {
-        $baiLam->update($data);
-        return $baiLam;
+        $examAttempt->update($data);
+        return $examAttempt;
     }
 
-    public function updateById(array $data, int $baiLamId)
+    public function updateById(array $data, int $examAttemptId)
     {
-        $baiLam = BaiLam::findOrFail($baiLamId);
-        return $baiLam->update($data);
+        $examAttempt = ExamAttempt::findOrFail($examAttemptId);
+        return $examAttempt->update($data);
     }
 
-    public function delete(BaiLam $baiLam)
+    public function delete(ExamAttempt $examAttempt)
     {
-        return $baiLam->delete();
+        return $examAttempt->delete();
     }
 
     public function startTest(array $data)
     {
-        $thiSinhId = $data["thiSinhId"];
-        $deThiId = $data["deThiId"];
+        $studentId = $data["student_id"];
+        $examId = $data["exam_id"];
 
-        $deThi = $this->deThiService->getById($deThiId);
+        $exam = $this->examService->getById($examId);
 
-        //tạo BaiLam
-        $baiLam = [
-            "thiSinhId" => $thiSinhId,
-            "deThiId" => $deThiId,
-            "thoiGianBatDau" => Date::now(),
+        // Create ExamAttempt
+        $examAttemptData = [
+            "student_id" => $studentId,
+            "exam_id"    => $examId,
+            "start_time" => Date::now(),
         ];
 
-        $baiLam = BaiLam::create($baiLam);
+        $examAttempt = ExamAttempt::create($examAttemptData);
 
-        //tạo LogBaiLam
-        $logBaiLam = [
-            "baiLamId" => $baiLam->id,
-            "soLanChuyenTab" => 0,
+        // Create ExamAttemptLog
+        $examAttemptLogs = [
+            "exam_attempt_id"  => $examAttempt->id,
+            "tab_switch_count" => 0,
         ];
-        $logBaiLam = $this->logBaiLamService->add($logBaiLam);
+        $this->examAttemptLogService->add($examAttemptLogs);
 
-        //tạo ChiTietBaiLam
-        $chiTietBaiLam = [];
+        // Create examAttemptAnswers
+        $questions = $this->examService->getQuestions($examId);
 
-        $cauHois = $this->deThiService->getQuestions($deThiId);
-
-        $chiTietBaiLam = $cauHois->map(function ($item) use ($baiLam) {
+        $examAttemptAnswers = $questions->map(function ($item) use ($examAttempt) {
             return [
-                "baiLamId" => $baiLam->id,
-                "cauHoiId" => $item->id
+                "exam_attempt_id" => $examAttempt->id,
+                "question_id"     => $item->id
             ];
         });
 
         $startTime = Date::now();
-        $doTestTime = $deThi->thoiGianLamBai;
-        $endTime = $deThi->thoiGianKetThuc;
+        $doTestTime = $exam->duration_minutes;
+        $endTime = $exam->end_time;
 
-        $duration = $this->CalculateDuration($startTime, $endTime, $doTestTime) * 60;
+        $duration = $this->calculateDuration($startTime, $endTime, $doTestTime) * 60;
 
+        Log::info("Duration: $duration");
+        Log::info("Start time: $startTime");
+        Log::info("End time: $endTime");
 
-        Log::info("thời gian $duration");
-        Log::info("start time $startTime");
-        Log::info("end time $endTime");
+        $this->setAutoSubmit($examAttempt->id, $duration);
 
-        $this->setAutoSubmit($baiLam->id, $duration);
-
-        return DB::transaction(function () use ($chiTietBaiLam, $baiLam) {
-            $this->chiTietBaiLamService->addManyNonTrans($chiTietBaiLam);
-            return $baiLam;
+        return DB::transaction(function () use ($examAttemptAnswers, $examAttempt) {
+            $this->examAttemptAnswerService->addManyNonTrans($examAttemptAnswers);
+            return $examAttempt;
         });
     }
 
-    public function CalculateDuration(DateTime $startTime, DateTime $endTime, int $doTestTime)
+    public function calculateDuration(DateTime $startTime, DateTime $endTime, int $doTestTime): float
     {
         $expectedEnd = clone $startTime;
         $expectedEnd->modify("+{$doTestTime} minutes");
@@ -132,329 +133,316 @@ class BaiLamService
     }
 
     //trường hợp front-end mất mạng không gửi request submit => backend tự động submit, chặn submit lại
-    public function setAutoSubmit(int $baiLamId, int $sec)
+    public function setAutoSubmit(int $examAttemptId, int $sec)
     {
         $sec += 10; // đợi 10s nếu frontend không gửi thì submit tự động
-        SubmitTestJob::dispatch($baiLamId)->delay(now()->addSecond($sec));
+        SubmitTestJob::dispatch($examAttemptId)->delay(now()->addSecond($sec));
     }
 
-    public function updatestudenttest(array $data, BaiLam $baiLam)
+    public function updateStudentTest(array $data, ExamAttempt $examAttempt)
     {
         $answers = $data['answers'];
 
-        $chiTietBaiLams = collect($answers)->map(function ($item) use ($baiLam) {
-            $cauHoiId = $item['cauHoiId'];
-            $cauHoi = $this->cauHoiService->getById($cauHoiId);
-            return $this->getAnswer($item, $baiLam, $cauHoi);
+        $examAttemptAnswers = collect($answers)->map(function ($item) use ($examAttempt) {
+            $questionId = $item['question_id']; // Rule: cauHoiId -> question_id
+            $question = $this->questionService->getById($questionId);
+            return $this->getAnswer($item, $examAttempt, $question);
         });
 
-        DB::transaction(function () use ($chiTietBaiLams) {
-            $this->chiTietBaiLamService->updateBatch($chiTietBaiLams->toArray());
+        DB::transaction(function () use ($examAttemptAnswers) {
+            $this->examAttemptAnswerService->updateBatch($examAttemptAnswers->toArray());
         });
     }
 
-    public function getAnswer(array $data, BaiLam $bailam, CauHoi $cauhoi)
+    public function getAnswer(array $data, ExamAttempt $examAttempt, Question $question)
     {
-        $dapAnId = $data['dapAnId'];
+        $answerId = $data['answer_id'];
 
-        //kiểm tra câu trả lời thuộc câu hỏi, câu trả lời là đúng
-        $cauTraLois = $this->cauHoiService->getCauTraLois($cauhoi->id);
+        // Verify answer belongs to question and is correct
+        $answers = $this->questionService->getAnswers($question->id);
 
-        $isCorrectChooser = $cauTraLois->contains(function ($item) use ($dapAnId) {
-            return ($dapAnId == $item->id && $item->isCorrectAnswer);
+        $isSelectedCorrect = $answers->contains(function ($item) use ($answerId) {
+            return ($answerId == $item->id && $item->is_correct_answer);
         });
 
-        $diem = 0;
-        if ($isCorrectChooser) {
-            $chiTietDeThi = $this->chiTietDeThiService->getChiTietDeThiById($bailam->deThiId, $cauhoi->id);
-            $diem = $chiTietDeThi->diem;
+        $score = 0;
+        if ($isSelectedCorrect) {
+            $examQuestion = $this->examQuestionService->getByExamAndQuestion($examAttempt->exam_id, $question->id);
+            $score = $examQuestion->score;
         }
 
-        $chiTietBaiLam = [
-            "baiLamId" => $bailam->id,
-            "cauHoiId" => $cauhoi->id,
-            "dapAnId" => $dapAnId,
-            "isCorrectChooser" => $isCorrectChooser,
-            "diem" => $diem,
+        $examAttemptDetail = [
+            "exam_attempt_id"    => $examAttempt->id,
+            "question_id"        => $question->id,
+            "answer_id"          => $answerId,
+            "is_selected_correct" => $isSelectedCorrect,
+            "score"              => $score,
         ];
 
-        return $chiTietBaiLam;
+        return $examAttemptDetail;
     }
 
-    public function submittest(array $data, int $baiLamId)
+    public function submitTest(array $data, int $examAttemptId)
     {
-        return DB::transaction(function () use ($data, $baiLamId) {
-            $baiLam = BaiLam::findOrFail($baiLamId);
-            //Nếu đã submit thì không cho submit nữa
-            if ($baiLam->status == "DA_NOP") {
-                throw new HttpException(500, "Bài làm đã nộp!");
+        return DB::transaction(function () use ($data, $examAttemptId) {
+            $examAttempt = ExamAttempt::findOrFail($examAttemptId);
+
+            // Prevent duplicate submissions
+            if ($examAttempt->status == "SUBMITTED") {
+                throw new HttpException(500, "Test has already been submitted!");
             }
 
-            $this->updatestudenttest($data, $baiLam); // update lần cuối
-            // tính điểm
-            $baiLam->load('chiTietBaiLams');
-            $soCauDung = $baiLam->chiTietBaiLams->reduce(function ($carry, $item) {
-                if ($item->isCorrectChooser) {
+            $this->updateStudentTest($data, $examAttempt); // Final update
+
+            // Calculate score
+            $examAttempt->load('examAttemptAnswers');
+
+            $correctAnswerCount = $examAttempt->examAttemptAnswers->reduce(function ($carry, $item) {
+                if ($item->is_selected_correct) {
                     return $carry + 1;
                 }
                 return $carry;
             }, 0);
-            $tongDiem = $baiLam->chiTietBaiLams->reduce(function ($carry, $item) {
-                return $carry + $item->diem ?? 0;
+
+            $totalScore = $examAttempt->examAttemptAnswers->reduce(function ($carry, $item) {
+                return $carry + ($item->score ?? 0);
             }, 0);
 
-            // cập nhật status
+            // Update status
             $dataUpdate = [
-                "thoiGianNopBai" => Date::now(),
-                "tongDiem" => $tongDiem,
-                "soCauDung" => $soCauDung,
-                "status" => "DA_NOP"
+                "submission_time"      => Date::now(),
+                "total_score"          => $totalScore,
+                "correct_answer_count" => $correctAnswerCount,
+                "status"               => "SUBMITTED"
             ];
 
-            $this->updateById($dataUpdate, $baiLam->id);
-            return $this->reviewresultbyid($baiLam->id);
+            $this->updateById($dataUpdate, $examAttempt->id);
+            return $this->reviewResultById($examAttempt->id);
         });
     }
 
-    public function reviewresult(BaiLam $bailam)
+    public function reviewResult(ExamAttempt $examAttempt)
     {
-        if ($bailam->status != "DA_NOP") {
-            throw new HttpException(500, "Bài làm chưa nộp");
+        if ($examAttempt->status != "SUBMITTED") {
+            throw new HttpException(500, "Test has not been submitted yet");
         }
-        $bailam->load("logBaiLam");
+        $examAttempt->load("examAttemptLogs");
 
-        //check cấu hình
-        $deThi = $bailam->deThi;
-        $deThi->loadCount([
-            'cauHois as soCauHoi'
+        // Check configuration
+        $exam = $examAttempt->exam;
+        $exam->loadCount([
+            'questions as total_questions'
         ]);
 
-        $cauHinhThi = $deThi->cauHinhThi;
-        $cauHois = $deThi->cauHois;
+        $examConfiguration = $exam->examConfiguration;
+        $questions = $exam->questions;
 
-        $cauHois->load('cauTraLois');
+        $questions->load('answers');
 
-        $chiTietBaiLams = $bailam->chiTietBaiLams;
+        $examAttemptAnswers = $examAttempt->examAttemptAnswers;
 
-        $bailam->makeHidden('deThi');
-        $bailam->makeHidden('chiTietBaiLams');
-        $deThi->makeHidden('cauHinhThi');
-        $deThi->makeHidden('cauHois');
+        $examAttempt->makeHidden('exam');
+        $examAttempt->makeHidden('examAttemptAnswers');
+        $exam->makeHidden('examConfiguration');
+        $exam->makeHidden('questions');
 
+        $detailMap = $examAttemptAnswers->keyBy('question_id');
 
-        $mapChiTiet = $chiTietBaiLams->keyBy('cauHoiId'); // giống dictionary
-        // Log::info("chiTietBaiLams", $chiTietBaiLams);
-        // Log::info("mapChiTiet", $mapChiTiet);
-
-        $cauHois->transform(function ($cauHoi) use ($mapChiTiet) { // map
-            $chiTiet = $mapChiTiet->get($cauHoi->id);
-            if (!$chiTiet) {
-                throw new HttpException(500, "Dữ liệu câu hỏi không hợp lệ hoặc thí sinh chưa làm bài");
+        $questions->transform(function ($question) use ($detailMap) {
+            $detail = $detailMap->get($question->id);
+            if (!$detail) {
+                throw new HttpException(500, "Question data is invalid or student has not attempted this question");
             }
-            $cauHoi->dapAnDaChon = $chiTiet->dapAnId;
+            $question->selected_answer = $detail->answer_id;
 
-            return $cauHoi;
+            return $question;
         });
 
-
-        // if ($cauHinhThi->showScore) {
         $data = [
-            "baiLam" => $bailam,
-            "deThi" => $deThi,
+            "examAttempt" => $examAttempt,
+            "exam"        => $exam,
+            "questions"   => $questions,
         ];
-        // if ($cauHinhThi->showDetailResults) {
-        $data["cauHois"] = $cauHois;
-        // }
-        // }
 
         return $data;
     }
 
-    public function reviewresultbyid(int $idBaiLam)
+    public function reviewResultById(int $examAttemptId)
     {
         try {
-            $bailam = BaiLam::findOrFail($idBaiLam);
+            $examAttempt = ExamAttempt::findOrFail($examAttemptId);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Không tìm thấy bài làm'
+                'message' => 'Exam attempt not found'
             ], 404);
         }
-        // Log::info($bailam->status);
-        if ($bailam->status != "DA_NOP") {
-            throw new HttpException(500, "Bài làm chưa nộp");
+
+        if ($examAttempt->status != "SUBMITTED") {
+            throw new HttpException(500, "Test has not been submitted yet");
         }
 
-        $bailam->load("logBaiLam");
+        $examAttempt->load("examAttemptLogs");
 
-        //check cấu hình
-        $deThi = $bailam->deThi;
-        $deThi->loadCount([
-            'cauHois as soCauHoi'
+        // Check configuration
+        $exam = $examAttempt->exam;
+        $exam->loadCount([
+            'questions as total_questions'
         ]);
 
-        $cauHinhThi = $deThi->cauHinhThi;
-        $cauHois = $deThi->cauHois;
+        $examConfiguration = $exam->examConfiguration;
+        $questions = $exam->questions;
 
-        $cauHois->load('cauTraLois');
+        $questions->load('answers');
 
-        $chiTietBaiLams = $bailam->chiTietBaiLams;
+        $examAttemptAnswers = $examAttempt->examAttemptAnswers;
 
-        $bailam->makeHidden('deThi');
-        $bailam->makeHidden('chiTietBaiLams');
-        $deThi->makeHidden('cauHinhThi');
-        $deThi->makeHidden('cauHois');
+        $examAttempt->makeHidden('exam');
+        $examAttempt->makeHidden('examAttemptAnswers');
+        $exam->makeHidden('examConfiguration');
+        $exam->makeHidden('questions');
 
-        $mapChiTiet = $chiTietBaiLams->keyBy('cauHoiId'); // giống dictionary
+        $detailMap = $examAttemptAnswers->keyBy('question_id');
 
-        $cauHois->transform(function ($cauHoi) use ($mapChiTiet) { // map
-            $chiTiet = $mapChiTiet->get($cauHoi->id);
-            if (!$chiTiet) {
-                throw new HttpException(500, "Dữ liệu câu hỏi không hợp lệ hoặc thí sinh chưa làm bài");
+        $questions->transform(function ($question) use ($detailMap) {
+            $detail = $detailMap->get($question->id);
+            if (!$detail) {
+                throw new HttpException(500, "Question data is invalid or student has not attempted this question");
             }
-            $cauHoi->dapAnDaChon = $chiTiet->dapAnId;
+            $question->selected_answer = $detail->answer_id;
 
-            return $cauHoi;
+            return $question;
         });
 
-
-        // if ($cauHinhThi->showScore) {
         $data = [
-            "baiLam" => $bailam,
-            "deThi" => $deThi,
+            "examAttempt" => $examAttempt,
+            "exam"        => $exam,
+            "questions"   => $questions,
         ];
-        // if ($cauHinhThi->showDetailResults) {
-        $data["cauHois"] = $cauHois;
-        // }
-        // }
 
         return $data;
     }
 
-    public function reviewresultbyidnoncheckstatus(int $idBaiLam)
+    public function reviewResultByIdNonCheckStatus(int $examAttemptId)
     {
         try {
-            $bailam = BaiLam::findOrFail($idBaiLam);
+            $examAttempt = ExamAttempt::findOrFail($examAttemptId);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Không tìm thấy bài làm'
+                'message' => 'Exam attempt not found'
             ], 404);
         }
 
-        $bailam->load("logBaiLam");
+        $examAttempt->load("examAttemptLogs");
 
-        $deThi = $bailam->deThi;
-        $deThi->loadCount([
-            'cauHois as soCauHoi'
+        $exam = $examAttempt->exam;
+        $exam->loadCount([
+            'questions as total_questions'
         ]);
 
-        $cauHois = $deThi->cauHois;
+        $questions = $exam->questions;
 
-        $cauHois->load('cauTraLois');
-        $chiTietBaiLams = $bailam->chiTietBaiLams;
+        $questions->load('answers');
+        $examAttemptAnswers = $examAttempt->examAttemptAnswers;
 
-        $bailam->makeHidden('deThi');
-        $bailam->makeHidden('chiTietBaiLams');
-        $deThi->makeHidden('cauHinhThi');
-        $deThi->makeHidden('cauHois');
+        $examAttempt->makeHidden('exam');
+        $examAttempt->makeHidden('examAttemptAnswers');
+        $exam->makeHidden('examConfiguration');
+        $exam->makeHidden('questions');
 
-        $mapChiTiet = $chiTietBaiLams->keyBy('cauHoiId'); // giống dictionary
+        $detailMap = $examAttemptAnswers->keyBy('question_id');
 
-        $cauHois->transform(function ($cauHoi) use ($mapChiTiet) { // lấy đáp án
-            $chiTiet = $mapChiTiet->get($cauHoi->id);
-            if (!$chiTiet) {
-                $cauHoi->dapAnDaChon = null;
+        $questions->transform(function ($question) use ($detailMap) {
+            $detail = $detailMap->get($question->id);
+            if (!$detail) {
+                $question->selected_answer = null;
             } else {
-                $cauHoi->dapAnDaChon = $chiTiet->dapAnId;
+                $question->selected_answer = $detail->answer_id;
             }
 
-            return $cauHoi;
+            return $question;
         });
+
         $data = [
-            "baiLam" => $bailam,
-            "deThi" => $deThi,
+            "examAttempt" => $examAttempt,
+            "exam"        => $exam,
+            "questions"   => $questions,
         ];
-        $data["cauHois"] = $cauHois;
+
         return $data;
     }
 
-    public function get_osvien(User $user)
-    { // lấy tất cả bài làm của sinh viên
-        $data = $user->load('baiLams.deThi');
-        return $data;
-    }
-
-    //bài làm theo nhóm học phần, theo user 
-    public function get_by_nhomhocphan_svien(NhomHocPhan $nhomHocPhan, User $user)
+    public function getOfStudent(User $user)
     {
-        $nhomHocPhan->load([
-            'deThis.baiLams' => function ($query) use ($user) {
-                $query->where('thiSinhId', $user->id)
+        // Get all exam attempts for the student
+        $data = $user->load('examAttempts.exam'); // NOTE: baiLams.deThi -> examAttempts.exam
+        return $data;
+    }
+    //bài làm theo nhóm học phần, theo user 
+    public function getByCourseGroupAndStudent(CourseGroup $courseGroup, User $user)
+    {
+        $courseGroup->load([
+            'exams.attempts' => function ($query) use ($user) {
+                $query->where('student_id', $user->id)
                     ->orderByDesc('created_at');
             }
         ]);
 
-        $nhomHocPhan->deThis->each(function ($deThi) {
-            // lấy bài làm gần nhất
-            $deThi->bai_lam = $deThi->baiLams->first() ?? null;
+        $courseGroup->exams->each(function ($exam) {
+            // Get the latest attempt
+            $exam->attempt = $exam->attempts->first() ?? null;
 
-            $deThi->makeHidden("baiLams");
+            $exam->makeHidden("attempts");
         });
 
-        return $nhomHocPhan;
+        return $courseGroup;
     }
 
-    public function get_o_hphan_dethi(NhomHocPhan $nhomhocphan, DeThi $deThi)
+    public function getOfCourseGroupAndExam(CourseGroup $courseGroup, Exam $exam)
     {
-        //lọc bài làm theo điều kiện
-        $baiLams = BaiLam::where('deThiId', $deThi->id)
-            ->whereHas('user.nhomHocPhans', function ($query) use ($nhomhocphan) {
-                $query->where('nhom_hoc_phans.id', $nhomhocphan->id);
+        $examAttempts = ExamAttempt::where('exam_id', $exam->id)
+            ->whereHas('user.courseGroups', function ($query) use ($courseGroup) { // NOTE: Relation courseGroups() trên User
+                $query->where('course_groups.id', $courseGroup->id);
             })
             ->get();
 
-        //lấy các chi tiết bài làm
-        $baiLams->load(["logBaiLam", "chiTietBaiLams"]);
-        $deThi->loadCount([
-            'cauHois as soCauHoi'
+        $examAttempts->load(["examAttemptLogs", "examAttemptAnswers"]);
+        $exam->loadCount([
+            'questions as total_questions'
         ]);
 
-        $deThi->load([
-            'cauHois.cauTraLois'
+        $exam->load([
+            'questions.answers'
         ]);
-        $cauHois = $deThi->cauHois;
+        $questions = $exam->questions;
 
-        $result = $baiLams->map(function ($bailam) use ($cauHois, $deThi) { //map lấy đáp án cho ds câu hỏi với từng bài làm
-            $chiTietBaiLams = $bailam->chiTietBaiLams;
+        $result = $examAttempts->map(function ($examAttempt) use ($questions) {
+            $examAttemptAnswers = $examAttempt->examAttemptAnswers;
 
-            $mapChiTiet = $chiTietBaiLams->keyBy('cauHoiId'); // giống dictionary
+            $answerMap = $examAttemptAnswers->keyBy('question_id');
 
-            $cauHoisClone = $cauHois->map(function ($cauHoi) use ($mapChiTiet) { //clone câu hỏi và lấy đáp án
-                $cauHoiClone = clone $cauHoi;
+            $questionsClone = $questions->map(function ($question) use ($answerMap) {
+                $questionClone = clone $question;
+                $answer = $answerMap->get($questionClone->id);
 
-                $chiTiet = $mapChiTiet->get($cauHoiClone->id);
+                $questionClone->selected_answer = $answer ? $answer->answer_option_id : null;
 
-                $cauHoiClone->dapAnDaChon = $chiTiet
-                    ? $chiTiet->dapAnId
-                    : null;
-
-                return $cauHoiClone;
+                return $questionClone;
             });
 
-            $bailam->makeHidden('chiTietBaiLams');
+            $examAttempt->makeHidden('examAttemptAnswers');
 
-            $data = [
-                "baiLam" => $bailam,
-                "cauHois" => $cauHoisClone
+            return [
+                "examAttempt" => $examAttempt,
+                "questions"   => $questionsClone
             ];
-            return $data;
         });
 
-        $deThi->makeHidden('cauHinhThi');
-        $deThi->makeHidden('cauHois');
+        $exam->makeHidden('examConfiguration');
+        $exam->makeHidden('questions');
 
         return [
-            "deThi" => $deThi,
-            "baiLams" => $result
+            "exam"         => $exam,
+            "examAttempts" => $result
         ];
     }
 }

@@ -2,36 +2,40 @@
 
 namespace App\Services;
 
-use App\Models\Chuong;
-use App\Models\MonHoc;
+use App\Models\Chapter;
+use App\Models\Subject;
 use Illuminate\Support\Facades\DB;
 
-class ChuongService
+class ChapterService
 {
-    public function create(array $data): Chuong
+    public function create(array $data): Chapter
     {
-        return Chuong::create($data);
+        return Chapter::create($data);
     }
 
-    public function update(MonHoc $monhoc, array $data)
+    public function update(Subject $subject, array $data): Subject
     {
-        return DB::transaction(function () use ($monhoc, $data) {
+        return DB::transaction(function () use ($subject, $data) {
+            // Xóa danh sách chương cũ của môn học
+            $subject->chapters()->delete();
 
-            $monhoc->chuongs()->delete();
-
-            $chuongs = collect($data['chuongs'])->map(function ($item) use ($monhoc) {
-                $item['monHocId'] = $monhoc->id; // Thêm thuộc tính maMonHoc
+            // Gán subject_id cho từng chương mới
+            $chapters = collect($data['chapters'] ?? [])->map(function ($item) use ($subject) {
+                $item['subject_id'] = $subject->id;
                 return $item;
             })->toArray();
 
-            $monhoc->chuongs()->insert($chuongs);
+            if (!empty($chapters)) {
+                $subject->chapters()->insert($chapters);
+            }
 
-            return $monhoc->load('chuongs'); // Trả về model kèm quan hệ mới
+            // Trả về model Subject cùng với danh sách chapters đã cập nhật
+            return $subject->load('chapters');
         });
     }
 
-    public function getByMonHoc(MonHoc $monHoc)
+    public function getBySubject(Subject $subject)
     {
-        return $monHoc->chuongs;
+        return $subject->chapters;
     }
 }

@@ -2,33 +2,33 @@
 
 namespace App\Services;
 
-use App\Models\ChiTietNhom;
+use App\Models\CourseGroupStudent;
 
-class ChiTietNhomService
+class CourseGroupStudentService
 {
     public function getAll()
     {
-        return ChiTietNhom::all();
+        return CourseGroupStudent::all();
     }
 
-    public function getOne(ChiTietNhom $chiTietNhom)
+    public function getOne(CourseGroupStudent $courseGroupStudent)
     {
-        return $chiTietNhom;
+        return $courseGroupStudent;
     }
 
     public function add(array $data)
     {
-        return ChiTietNhom::create($data);
+        return CourseGroupStudent::create($data);
     }
 
-    public function update(array $data, ChiTietNhom $chiTietNhom)
+    public function update(array $data, CourseGroupStudent $courseGroupStudent)
     {
-        $chiTietNhom->update($data);
-        return $chiTietNhom;
+        $courseGroupStudent->update($data);
+        return $courseGroupStudent;
     }
 
-    public function delete(ChiTietNhom $chiTietNhom)
+    public function delete(CourseGroupStudent $courseGroupStudent)
     {
-        return $chiTietNhom->delete();
+        return $courseGroupStudent->delete();
     }
 }

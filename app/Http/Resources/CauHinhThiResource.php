@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CauHinhThiResource extends JsonResource
+class ExamConfigurationResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -28,7 +28,7 @@ class CauHinhThiResource extends JsonResource
             'tabSwitchLimit' => $this->tabSwitchLimit,
             'messageOnWarning' => $this->messageOnWarning,
             'deThiId' => $this->deThiId,
-            'deThi' => new DeThiResource($this->whenLoaded('deThi')),
+            'deThi' => new ExamResource($this->whenLoaded('deThi')),
         ];
     }
 }

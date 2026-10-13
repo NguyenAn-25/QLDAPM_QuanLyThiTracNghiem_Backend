@@ -13,16 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('chi_tiet_nhoms', function (Blueprint $table) {
-            //khóa ngoại
-            $table->foreignId('sinhVienId')
-                ->constrained('users');
-
-            $table->foreignId('nhomHocPhanId')
-                ->constrained('nhom_hoc_phans');
-
-            $table->primary(['sinhVienId', 'nhomHocPhanId']);
-                
+        Schema::create('course_group_students', function (Blueprint $table) {
+            $table->foreignId('student_id')->constrained('users');
+            $table->foreignId('course_group_id')->constrained('course_groups');
+            $table->primary(['student_id', 'course_group_id']);
         });
     }
 
@@ -33,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chi_tiet_nhoms');
+        Schema::dropIfExists('course_group_students');
     }
 };

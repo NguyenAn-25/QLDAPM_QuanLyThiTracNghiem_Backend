@@ -3,181 +3,183 @@
 namespace App\Services;
 
 use App\Exceptions\BusinessException;
-use App\Models\BaiLam;
-use App\Models\CauHinhThi;
-use App\Models\CauHoi;
-use App\Models\ChiTietDeThi;
-use App\Models\DeThi;
-use App\Models\DoKho;
-use App\Models\GiaoBaiThi;
-use App\Models\MonHoc;
-use App\Models\NhomHocPhan;
+use App\Models\CourseGroup;
+use App\Models\Difficulty;
+use App\Models\Exam;
+use App\Models\ExamAssignment;
+use App\Models\ExamAttempt;
+use App\Models\ExamConfiguration;
+use App\Models\ExamQuestion;
+use App\Models\Question;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-class DeThiService
+class ExamService
 {
-    protected GiaoBaiThiService $giaoBaiThiService;
-    protected ChiTietDeThiService $chiTietDeThiService;
-    protected CauHinhThiService $cauHinhThiService;
+    protected ExamAssignmentService $examAssignmentService;
+    protected ExamQuestionService $examQuestionService;
+    protected ExamConfigurationService $examConfigurationService;
 
-    public function __construct(GiaoBaiThiService $giaoBaiThiService, ChiTietDeThiService $chiTietDeThiService, CauHinhThiService $cauHinhThiService)
-    {
-        $this->giaoBaiThiService = $giaoBaiThiService;
-        $this->chiTietDeThiService = $chiTietDeThiService;
-        $this->cauHinhThiService = $cauHinhThiService;
+    public function __construct(
+        ExamAssignmentService $examAssignmentService,
+        ExamQuestionService $examQuestionService,
+        ExamConfigurationService $examConfigurationService
+    ) {
+        $this->examAssignmentService = $examAssignmentService;
+        $this->examQuestionService = $examQuestionService;
+        $this->examConfigurationService = $examConfigurationService;
     }
+
     public function getAll()
     {
-        return DeThi::all()->load(['monThi', 'nhomHocPhans']);
+        return Exam::all()->load(['subject', 'courseGroups']);
     }
 
-    public function getOne(DeThi $deThi)
+    public function getOne(Exam $exam)
     {
-        $deThi->load('cauHois');
-        $deThi->cauHois->load('cauTraLois');
-        return $deThi;
+        $exam->load('questions');
+        $exam->questions->load('answers');
+        return $exam;
     }
 
     public function getById(int $id)
     {
-        return DeThi::findOrFail($id);
+        return Exam::findOrFail($id);
     }
 
     public function add(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $deThiData = [
-                "tenDe" => $data["tenDe"],
-                "thoiGianBatDau" => $data["thoiGianBatDau"],
-                "thoiGianKetThuc" => $data["thoiGianKetThuc"],
-                "thoiGianLamBai" => $data["thoiGianLamBai"],
-                "nguoiTaoId" => $data["nguoiTaoId"],
-                "monThiId" => $data["monThiId"],
+            $examData = [
+                "exam_name"        => $data["exam_name"],
+                "start_time"       => $data["start_time"],
+                "end_time"         => $data["end_time"],
+                "duration_minutes" => $data["duration_minutes"],
+                "creator_id"       => $data["creator_id"],
+                "subject_id"       => $data["subject_id"],
             ];
 
-            $deThi = DeThi::create($deThiData);
+            $exam = Exam::create($examData);
 
-            $nhomHocPhanIds = $data["nhomHocPhanIds"];
-            $cauHois = $data["cauHois"];
+            $courseGroupIds = $data["course_group_ids"];
+            $questions = $data["questions"];
 
-            $giaoBaiThis = collect($nhomHocPhanIds)->map(function ($item) use ($deThi) {
-                return (
-                    [
-                        "deThiId" => $deThi->id,
-                        "nhomHocPhanId" => $item,
-                        "thoiGianBatDau" => $deThi["thoiGianBatDau"],
-                        "thoiGianKetThuc" => $deThi["thoiGianKetThuc"],
-                    ]
-                );
+            $examAssignments = collect($courseGroupIds)->map(function ($item) use ($exam) {
+                return [
+                    "exam_id"         => $exam->id,
+                    "course_group_id" => $item,
+                    "start_time"      => $exam->start_time,
+                    "end_time"        => $exam->end_time,
+                ];
             });
 
-            $chiTietDeThis = collect($cauHois)->map(function ($item) use ($deThi) {
-                return ([
-                    "deThiId" => $deThi->id,
-                    "cauHoiId" => $item["id"],
-                    "thuTu" => $item["thuTu"],
-                    "diem" => $item["diem"]
-                ]);
+            $examQuestions = collect($questions)->map(function ($item) use ($exam) {
+                return [
+                    "exam_id"        => $exam->id,
+                    "question_id"    => $item["id"],
+                    "question_order" => $item["order"],
+                    "score"          => $item["score"]
+                ];
             });
 
-            $this->giaoBaiThiService->addArr($giaoBaiThis->toArray());
-            $this->chiTietDeThiService->addArr($chiTietDeThis->toArray());
+            $this->examAssignmentService->addArr($examAssignments->toArray());
+            $this->examQuestionService->addArr($examQuestions->toArray());
 
-            $cauHinh = $data["cauHinh"];
-            $cauHinh["deThiId"] = $deThi->id;
+            $configuration = $data["configuration"];
+            $configuration["exam_id"] = $exam->id;
 
-            $this->cauHinhThiService->create($cauHinh);
+            $this->examConfigurationService->create($configuration);
 
-            $deThi->load(['cauHois', 'monThi', 'nhomHocPhans', 'cauHinhThi']);
-            $deThi->cauHois->load('cauTraLois');
+            $exam->load(['questions', 'subject', 'courseGroups', 'configuration']);
+            $exam->questions->load('answers');
 
-            return $deThi;
+            return $exam;
         });
     }
 
     public function generateByFilter(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $nhomHocPhanIds = array_values(array_unique($data['nhomHocPhanIds'] ?? []));
+            $courseGroupIds = array_values(array_unique($data['course_group_ids'] ?? []));
 
             $creator = User::query()
-                ->with(['role', 'monHocs'])
-                ->findOrFail($data['nguoiTaoId']);
+                ->with(['role', 'subjects'])
+                ->findOrFail($data['creator_id']);
 
-            $roleName = strtolower((string) optional($creator->role)->tenNhomQuyen);
+            $roleName = strtolower((string) optional($creator->role)->role_name);
             $isAdmin = $roleName === 'admin';
             $isTeacher = $roleName === 'teacher';
 
             if (!$isAdmin && !$isTeacher) {
-                throw new BusinessException('Chỉ admin hoặc giảng viên mới được tạo đề ngẫu nhiên', 403);
+                throw new BusinessException('Only administrators or teachers can generate random exams', 403);
             }
 
-            $allowedMonHocIds = $this->getAllowedMonHocIds($creator, $isAdmin);
-            if (!in_array((int) $data['monThiId'], $allowedMonHocIds, true)) {
-                throw new BusinessException('Bạn không có quyền tạo đề cho môn học này', 403);
+            $allowedSubjectIds = $this->getAllowedSubjectIds($creator, $isAdmin);
+            if (!in_array((int) $data['subject_id'], $allowedSubjectIds, true)) {
+                throw new BusinessException('You do not have permission to create exams for this subject', 403);
             }
 
-            if (!empty($nhomHocPhanIds)) {
-                $this->validateNhomHocPhans($nhomHocPhanIds, (int) $data['monThiId'], $creator->id, $isAdmin);
+            if (!empty($courseGroupIds)) {
+                $this->validateCourseGroups($courseGroupIds, (int) $data['subject_id'], $creator->id, $isAdmin);
             }
 
-            $chuongIds = array_values(array_unique($data['chuongIds'] ?? []));
-            if (!empty($chuongIds)) {
-                $validChapterCount = DB::table('chuongs')
-                    ->whereIn('id', $chuongIds)
-                    ->where('monHocId', $data['monThiId'])
-                    ->where('isDeleted', false)
+            $chapterIds = array_values(array_unique($data['chapter_ids'] ?? []));
+            if (!empty($chapterIds)) {
+                $validChapterCount = DB::table('chapters')
+                    ->whereIn('id', $chapterIds)
+                    ->where('subject_id', $data['subject_id'])
+                    ->where('is_deleted', false)
                     ->count();
 
-                if ($validChapterCount !== count($chuongIds)) {
-                    throw new BusinessException('Danh sách chương không hợp lệ cho môn đã chọn', 422);
+                if ($validChapterCount !== count($chapterIds)) {
+                    throw new BusinessException('Selected chapters are invalid for the chosen subject', 422);
                 }
             }
 
-            $doKhoFilters = collect($data['doKhoFilters'])
-                ->groupBy('doKhoId')
+            $difficultyFilters = collect($data['difficulty_filters'])
+                ->groupBy('difficulty_id')
                 ->map(function ($items) {
-                    return (int) collect($items)->sum('soLuongCau');
+                    return (int) collect($items)->sum('question_count');
                 })
-                ->filter(function ($soLuong) {
-                    return $soLuong > 0;
+                ->filter(function ($count) {
+                    return $count > 0;
                 });
 
-            if ($doKhoFilters->isEmpty()) {
-                throw new BusinessException('Cấu hình độ khó không hợp lệ, mỗi mức cần số lượng câu lớn hơn 0', 422);
+            if ($difficultyFilters->isEmpty()) {
+                throw new BusinessException('Invalid difficulty configuration, each level must have a question count greater than 0', 422);
             }
 
             $selectedQuestions = collect();
 
-            foreach ($doKhoFilters as $doKhoId => $soLuongCau) {
-                $query = CauHoi::query()
-                    ->where('isDeleted', false)
+            foreach ($difficultyFilters as $difficultyId => $questionCount) {
+                $query = Question::query()
+                    ->where('is_deleted', false)
                     ->where('status', '!=', 'archive')
-                    ->where('monHocId', $data['monThiId'])
-                    ->where('doKhoId', (int) $doKhoId);
+                    ->where('subject_id', $data['subject_id'])
+                    ->where('difficulty_id', (int) $difficultyId);
 
-                if (!empty($chuongIds)) {
-                    $query->whereIn('chuongId', $chuongIds);
+                if (!empty($chapterIds)) {
+                    $query->whereIn('chapter_id', $chapterIds);
                 }
 
                 if (!$isAdmin) {
                     $query->where(function (Builder $inner) use ($creator) {
                         $inner->where('status', 'public')
-                            ->orWhere('nguoiTaoId', $creator->id);
+                            ->orWhere('creator_id', $creator->id);
                     });
                 }
 
                 $questionsByDifficulty = $query
                     ->inRandomOrder()
-                    ->limit($soLuongCau)
+                    ->limit($questionCount)
                     ->get();
 
-                if ($questionsByDifficulty->count() < $soLuongCau) {
-                    $doKho = DoKho::query()->find($doKhoId);
-                    $tenDoKho = $doKho?->tenDoKho ?? ('ID ' . $doKhoId);
-                    throw new BusinessException('Không đủ câu hỏi cho độ khó ' . $tenDoKho, 422);
+                if ($questionsByDifficulty->count() < $questionCount) {
+                    $difficulty = Difficulty::query()->find($difficultyId);
+                    $difficultyName = $difficulty?->difficulty_name ?? ('ID ' . $difficultyId);
+                    throw new BusinessException('Not enough questions for difficulty level: ' . $difficultyName, 422);
                 }
 
                 $selectedQuestions = $selectedQuestions->concat($questionsByDifficulty);
@@ -188,79 +190,78 @@ class DeThiService
                 ->values();
 
             if ($selectedQuestions->isEmpty()) {
-                throw new BusinessException('Không có câu hỏi phù hợp với bộ lọc đã chọn', 422);
+                throw new BusinessException('No questions matched the selected filters', 422);
             }
 
-            $deThi = DeThi::create([
-                'tenDe' => $data['tenDe'],
-                'thoiGianBatDau' => $data['thoiGianBatDau'],
-                'thoiGianKetThuc' => $data['thoiGianKetThuc'],
-                'thoiGianLamBai' => $data['thoiGianLamBai'],
-                'nguoiTaoId' => $data['nguoiTaoId'],
-                'monThiId' => $data['monThiId'],
+            $exam = Exam::create([
+                'exam_name'        => $data['exam_name'],
+                'start_time'       => $data['start_time'],
+                'end_time'         => $data['end_time'],
+                'duration_minutes' => $data['duration_minutes'],
+                'creator_id'       => $data['creator_id'],
+                'subject_id'       => $data['subject_id'],
             ]);
 
-            $giaoBaiThis = collect($nhomHocPhanIds)->map(function ($nhomHocPhanId) use ($deThi) {
+            $examAssignments = collect($courseGroupIds)->map(function ($courseGroupId) use ($exam) {
                 return [
-                    'deThiId' => $deThi->id,
-                    'nhomHocPhanId' => $nhomHocPhanId,
-                    'thoiGianBatDau' => $deThi->thoiGianBatDau,
-                    'thoiGianKetThuc' => $deThi->thoiGianKetThuc,
+                    'exam_id'         => $exam->id,
+                    'course_group_id' => $courseGroupId,
+                    'start_time'      => $exam->start_time,
+                    'end_time'        => $exam->end_time,
                 ];
             });
 
-            $chiTietDeThis = $selectedQuestions->values()->map(function ($question, $index) use ($deThi) {
+            $examQuestions = $selectedQuestions->values()->map(function ($question, $index) use ($exam) {
                 return [
-                    'deThiId' => $deThi->id,
-                    'cauHoiId' => $question->id,
-                    'thuTu' => $index + 1,
-                    'diem' => $question->diemMacDinh ?? 1,
+                    'exam_id'        => $exam->id,
+                    'question_id'    => $question->id,
+                    'question_order' => $index + 1,
+                    'score'          => $question->default_score ?? 1,
                 ];
             });
 
-            if ($giaoBaiThis->isNotEmpty()) {
-                $this->giaoBaiThiService->addArr($giaoBaiThis->toArray());
+            if ($examAssignments->isNotEmpty()) {
+                $this->examAssignmentService->addArr($examAssignments->toArray());
             }
-            $this->chiTietDeThiService->addArr($chiTietDeThis->toArray());
+            $this->examQuestionService->addArr($examQuestions->toArray());
 
-            $cauHinh = $data['cauHinh'];
-            $cauHinh['deThiId'] = $deThi->id;
-            $this->cauHinhThiService->create($cauHinh);
+            $configuration = $data['configuration'];
+            $configuration['exam_id'] = $exam->id;
+            $this->examConfigurationService->create($configuration);
 
-            $deThi->load(['cauHois', 'monThi', 'nhomHocPhans', 'cauHinhThi']);
-            $deThi->cauHois->load('cauTraLois');
+            $exam->load(['questions', 'subject', 'courseGroups', 'configuration']);
+            $exam->questions->load('answers');
 
-            return $deThi;
+            return $exam;
         });
     }
 
-    public function update(array $data, DeThi $deThi)
+    public function update(array $data, Exam $exam)
     {
-        return DB::transaction(function () use ($data, $deThi) {
-            // 1. Update DeThi
-
-            $deThi->update($data);
+        return DB::transaction(function () use ($data, $exam) {
+            // 1. Update Exam
+            $exam->update($data);
 
             /*
         =========================
         2. Xử lý nhóm học phần
         =========================
         */
-            if (isset($data['nhomHocPhanIds'])) {
-                // Xóa cũ
-                $this->giaoBaiThiService->deleteByDeThiId($deThi->id);
+            if (isset($data['course_group_ids'])) {
+                // Delete old records
+                $this->examAssignmentService->deleteByExamId($exam->id);
 
-                // Tạo mới
-                $giaoBaiThis = collect($data['nhomHocPhanIds'])->map(function ($item) use ($deThi) {
+                // Create new records
+                $examAssignments = collect($data['course_group_ids'])->map(function ($item) use ($exam) {
                     return [
-                        "deThiId" => $deThi->id,
-                        "nhomHocPhanId" => $item,
-                        "thoiGianBatDau" => $deThi->thoiGianBatDau,
-                        "thoiGianKetThuc" => $deThi->thoiGianKetThuc,
+                        "exam_id"         => $exam->id,
+                        "course_group_id" => $item,
+                        "start_time"      => $exam->start_time,
+                        "end_time"        => $exam->end_time,
                     ];
                 });
 
-                $this->giaoBaiThiService->addArr($giaoBaiThis->toArray());
+                $this->examAssignmentService->addArr($examAssignments->toArray());
             }
 
             /*
@@ -268,21 +269,21 @@ class DeThiService
         3. Xử lý câu hỏi
         =========================
         */
-            if (isset($data['cauHois'])) {
-                // Xóa cũ
-                $this->chiTietDeThiService->deleteByDeThiId($deThi->id);
+            if (isset($data['questions'])) {
+                // Delete old records
+                $this->examQuestionService->deleteByExamId($exam->id);
 
-                // Tạo mới
-                $chiTietDeThis = collect($data['cauHois'])->map(function ($item) use ($deThi) {
+                // Create new records
+                $examQuestions = collect($data['questions'])->map(function ($item) use ($exam) {
                     return [
-                        "deThiId" => $deThi->id,
-                        "cauHoiId" => $item["id"],
-                        "thuTu" => $item["thuTu"],
-                        "diem" => $item["diem"]
+                        "exam_id"        => $exam->id,
+                        "question_id"    => $item["id"],
+                        "question_order" => $item["order"],
+                        "score"          => $item["score"]
                     ];
                 });
 
-                $this->chiTietDeThiService->addArr($chiTietDeThis->toArray());
+                $this->examQuestionService->addArr($examQuestions->toArray());
             }
 
             /*
@@ -290,17 +291,16 @@ class DeThiService
         4. Xử lý cấu hình
         =========================
         */
-            if (isset($data['cauHinh'])) {
-                $cauHinhData = $data['cauHinh'];
-                $cauHinhData['deThiId'] = $deThi->id;
+            if (isset($data['configuration'])) {
+                $configurationData = $data['configuration'];
+                $configurationData['exam_id'] = $exam->id;
 
-                // Nếu đã có thì update, chưa có thì create
-                $cauHinh = $this->cauHinhThiService->findByDeThiId($deThi->id);
+                $configuration = $this->examConfigurationService->findByExamId($exam->id);
 
-                if ($cauHinh) {
-                    $this->cauHinhThiService->update($cauHinh, $cauHinhData);
+                if ($configuration) {
+                    $this->examConfigurationService->update($configuration, $configurationData);
                 } else {
-                    $this->cauHinhThiService->create($cauHinhData);
+                    $this->examConfigurationService->create($configurationData);
                 }
             }
 
@@ -309,81 +309,81 @@ class DeThiService
         5. Load lại dữ liệu
         =========================
         */
-            $deThi->load(['cauHois', 'monThi', 'nhomHocPhans', 'cauHinhThi']);
-            $deThi->cauHois->load('cauTraLois');
+            $exam->load(['questions', 'subject', 'courseGroups', 'configuration']);
+            $exam->questions->load('answers');
 
-            return $deThi;
+            return $exam;
         });
     }
 
-    public function delete(int $deThiId)
+    public function delete(int $examId)
     {
-        return DB::transaction(function () use ($deThiId) {
+        return DB::transaction(function () use ($examId) {
 
-            $deThi = DeThi::findOrFail($deThiId);
+            $exam = Exam::findOrFail($examId);
 
-            $hasBaiLam = BaiLam::where('deThiId', $deThiId)->exists();
+            $hasAttempt = ExamAttempt::where('exam_id', $examId)->exists();
 
-            //xóa mềm
-            if ($hasBaiLam) {
-                $deThi->update([
-                    'isDeleted' => true
+            // Soft delete
+            if ($hasAttempt) {
+                $exam->update([
+                    'is_deleted' => true
                 ]);
 
                 return true;
             }
 
-            //xóa cứng
-            // 1. Xóa cấu hình
-            CauHinhThi::where('deThiId', $deThiId)->delete();
+            // Hard delete
+            // 1. Delete configuration
+            ExamConfiguration::where('exam_id', $examId)->delete();
 
-            // 2. Xóa chi tiết đề thi (câu hỏi)
-            ChiTietDeThi::where('deThiId', $deThiId)->delete();
+            // 2. Delete exam details (questions)
+            ExamQuestion::where('exam_id', $examId)->delete();
 
-            // 3. Xóa giao bài thi
-            GiaoBaiThi::where('deThiId', $deThiId)->delete();
+            // 3. Delete exam assignments
+            ExamAssignment::where('exam_id', $examId)->delete();
 
-            // 4. Xóa đề thi
-            $deThi->delete();
+            // 4. Delete exam
+            $exam->delete();
 
             return true;
         });
     }
 
-    public function get_osvien(User $user)
-    { // lấy tất cả đề thi của sinh viên
-        $user->load('nhomHocPhans.deThis');
+    public function getOfStudent(User $user)
+    {
+        // Get all exams assigned to the student
+        $user->load('courseGroups.exams');
 
-        //map và tách các phần tử trong mảng con (dethis) ra 1 mảng
-        $deThi = $user->nhomHocPhans->flatMap(
-            function ($nhomHocPhan) {
-                return $nhomHocPhan->deThis->load('monThi');
+        // Map and extract nested exams into a single collection
+        $exams = $user->courseGroups->flatMap(
+            function ($courseGroup) {
+                return $courseGroup->exams->load('subject');
             }
-        )->unique('id')->values(); // tránh trường hợp đề thi chia cho 2 nhóm khác nhau
-        $deThi;
+        )->unique('id')->values(); // Prevent duplicate exams assigned to multiple groups
 
-        return $deThi;
+        return $exams;
     }
 
-    public function getQuestions(int $deThiId)
+    public function getQuestions(int $examId)
     {
-        $deThi = DeThi::findOrFail($deThiId);
-        $deThi->load('cauHois');
-        return $deThi->cauHois;
+        $exam = Exam::findOrFail($examId);
+        $exam->load('questions');
+        return $exam->questions;
     }
 
-    public function getAd(DeThi $deThi)
+    public function getExamDetails(Exam $exam)
     {
-        $deThi->load(['cauHois', 'monThi', 'nhomHocPhans', 'cauHinhThi']);
-        $deThi->cauHois->load('cauTraLois');
-        return $deThi;
+        $exam->load(['questions', 'subject', 'courseGroups', 'configuration']);
+        $exam->questions->load('answers');
+        return $exam;
     }
 
-    private function getAllowedMonHocIds(User $creator, bool $isAdmin): array
+    private function getAllowedSubjectIds(User $creator, bool $isAdmin): array
     {
         if ($isAdmin) {
-            return MonHoc::query()
-                ->where('isDeleted', false)
+            return Subject::query()
+                ->where('is_deleted', false)
                 ->pluck('id')
                 ->map(function ($id) {
                     return (int) $id;
@@ -391,7 +391,7 @@ class DeThiService
                 ->all();
         }
 
-        return $creator->monHocs
+        return $creator->subjects
             ->pluck('id')
             ->map(function ($id) {
                 return (int) $id;
@@ -399,41 +399,41 @@ class DeThiService
             ->all();
     }
 
-    private function validateNhomHocPhans(array $nhomHocPhanIds, int $monThiId, int $nguoiTaoId, bool $isAdmin): void
+    private function validateCourseGroups(array $courseGroupIds, int $subjectId, int $creatorId, bool $isAdmin): void
     {
-        $query = NhomHocPhan::query()
-            ->whereIn('id', $nhomHocPhanIds)
-            ->where('monHocId', $monThiId)
-            ->where('isDeleted', false);
+        $query = CourseGroup::query()
+            ->whereIn('id', $courseGroupIds)
+            ->where('subject_id', $subjectId)
+            ->where('is_deleted', false);
 
         if (!$isAdmin) {
-            $query->where('giangVienId', $nguoiTaoId);
+            $query->where('teacher_id', $creatorId);
         }
 
         $validCount = $query->count();
-        if ($validCount !== count(array_unique($nhomHocPhanIds))) {
-            throw new BusinessException('Danh sách nhóm học phần không hợp lệ hoặc không thuộc quyền quản lý', 422);
+        if ($validCount !== count(array_unique($courseGroupIds))) {
+            throw new BusinessException('Course groups list is invalid or not under your management', 422);
         }
     }
 
 
     //bài làm theo nhóm học phần, theo user 
-    public function get_by_nhomhocphan_svien(NhomHocPhan $nhomHocPhan, User $user)
+    public function getByCourseGroupAndStudent(CourseGroup $courseGroup, User $user)
     {
-        $nhomHocPhan->load([
-            'deThis.baiLams' => function ($query) use ($user) {
-                $query->where('thiSinhId', $user->id)
+        $courseGroup->load([
+            'exams.attempts' => function ($query) use ($user) {
+                $query->where('student_id', $user->id)
                     ->orderByDesc('created_at');
             }
         ]);
 
-        $nhomHocPhan->deThis->each(function ($deThi) {
-            // lấy bài làm gần nhất
-            $deThi->bai_lam = $deThi->baiLams->first() ?? null;
+        $courseGroup->exams->each(function ($exam) {
+            // Get the most recent attempt
+            $exam->attempt = $exam->attempts->first() ?? null;
 
-            $deThi->makeHidden("baiLams");
+            $exam->makeHidden("examAttempts");
         });
 
-        return $nhomHocPhan;
+        return $courseGroup;
     }
 }

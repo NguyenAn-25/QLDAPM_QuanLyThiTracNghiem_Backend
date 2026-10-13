@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Action;
+use App\Models\FunctionModel;
 use App\Models\Role;
 use App\Models\RoleDetail;
 use Illuminate\Support\Facades\DB;
@@ -16,29 +16,30 @@ class RoleService
         $roles = Role::withCount([
             'users as total_users'
         ])->get();
+
         return $roles;
     }
 
     public function getRoleDetail(Role $role)
     {
-        $role = Role::with('role_details.action')->findOrFail($role->id);
-        $role_details = $role->role_details;
+        $role = Role::with('role_details.function')->findOrFail($role->id);
+        $roleDetails = $role->role_details;
 
-        $permission = $role_details
-            ->groupBy('chucNangId')
+        $permission = $roleDetails
+            ->groupBy('function_id')
             ->map(function ($items) {
                 return [
-                    'tenChucNang' => $items->first()->action->tenChucNang,
-                    'canView'   => $items->contains('hanhDong', 'VIEW'),
-                    'canCreate' => $items->contains('hanhDong', 'ADD'),
-                    'canUpdate' => $items->contains('hanhDong', 'UPDATE'),
-                    'canDelete' => $items->contains('hanhDong', 'DELETE')
+                    'function_name' => $items->first()->function->function_name,
+                    'canView'       => $items->contains('action', 'VIEW'),
+                    'canCreate'     => $items->contains('action', 'ADD'),
+                    'canUpdate'     => $items->contains('action', 'UPDATE'),
+                    'canDelete'     => $items->contains('action', 'DELETE')
                 ];
             })->values();
 
         $response = [
-            "id" => $role->id,
-            "tenNhomQuyen" => $role->tenNhomQuyen,
+            "id"           => $role->id,
+            "role_name"    => $role->role_name,
             "role_details" => $permission
         ];
 
@@ -47,25 +48,26 @@ class RoleService
 
     public function getRoleDetailById(int $id)
     {
-        $role = Role::with('role_details.action')->find($id);
-        if(!$role) return null;
-        $role_details = $role->role_details;
+        $role = Role::with('role_details.function')->find($id);
+        if (!$role) return null;
 
-        $permission = $role_details
-            ->groupBy('chucNangId')
+        $roleDetails = $role->role_details;
+
+        $permission = $roleDetails
+            ->groupBy('function_id')
             ->map(function ($items) {
                 return [
-                    'tenChucNang' => $items->first()->action->tenChucNang,
-                    'canView'   => $items->contains('hanhDong', 'VIEW'),
-                    'canCreate' => $items->contains('hanhDong', 'ADD'),
-                    'canUpdate' => $items->contains('hanhDong', 'UPDATE'),
-                    'canDelete' => $items->contains('hanhDong', 'DELETE')
+                    'function_name' => $items->first()->function->function_name,
+                    'canView'       => $items->contains('action', 'VIEW'),
+                    'canCreate'     => $items->contains('action', 'ADD'),
+                    'canUpdate'     => $items->contains('action', 'UPDATE'),
+                    'canDelete'     => $items->contains('action', 'DELETE')
                 ];
             })->values();
 
         $response = [
-            "id" => $role->id,
-            "tenNhomQuyen" => $role->tenNhomQuyen,
+            "id"           => $role->id,
+            "role_name"    => $role->role_name,
             "role_details" => $permission
         ];
 
@@ -94,145 +96,146 @@ class RoleService
     // }
     public function createRoleWithPermissions(array $data)
     {
-        //transaction kiểu II, đảm bảo rollback toàn bộ khi có lỗi
+        // Transaction to ensure complete rollback in case of error
         return DB::transaction(function () use ($data) {
-            // 1. Thêm role
+            // 1. Create role
             $role = Role::create([
-                'tenNhomQuyen' => $data['tenNhomQuyen'],
+                'role_name' => $data['role_name'],
             ]);
 
-            // 2. Chuẩn bị dữ liệu role_details
+            // 2. Prepare role_details data
             $roleDetailsData = [];
             foreach ($data['role_details'] as $roleDetail) {
-                //Tìm action cho mỗi quyền hạn
-                $action = Action::where('tenChucNang', $roleDetail['tenChucNang'])->firstOrFail();
+                // Find function for each permission set
+                $function = FunctionModel::where('function_name', $roleDetail['function_name'])->firstOrFail();
+
                 if ($roleDetail['canView']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'   => $role->id,
-                        'chucNangId' => $action->id,
-                        'hanhdong'  => 'VIEW',
+                        'role_id'     => $role->id,
+                        'function_id' => $function->id,
+                        'action'      => 'VIEW',
                     ];
                 }
 
                 if ($roleDetail['canCreate']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'   => $role->id,
-                        'chucNangId' => $action->id,
-                        'hanhdong'  => 'ADD',
+                        'role_id'     => $role->id,
+                        'function_id' => $function->id,
+                        'action'      => 'ADD',
                     ];
                 }
 
                 if ($roleDetail['canUpdate']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'   => $role->id,
-                        'chucNangId' => $action->id,
-                        'hanhdong'  => 'UPDATE',
+                        'role_id'     => $role->id,
+                        'function_id' => $function->id,
+                        'action'      => 'UPDATE',
                     ];
                 }
 
                 if ($roleDetail['canDelete']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'   => $role->id,
-                        'chucNangId' => $action->id,
-                        'hanhdong'  => 'DELETE',
+                        'role_id'     => $role->id,
+                        'function_id' => $function->id,
+                        'action'      => 'DELETE',
                     ];
                 }
             }
 
-            // 3. Insert batch 1 lần
+            // 3. Batch insert
             RoleDetail::insert($roleDetailsData);
 
-            return $role->load('role_details.action');
+            return $role->load('role_details.function');
         });
     }
 
-    public function updateRoleWithPermissions(array $data, $id)
+    public function updateRoleWithPermissions(array $data, int $id)
     {
         return DB::transaction(function () use ($data, $id) {
 
-            // 1. Lấy role cần update
+            // 1. Get role to update
             $role = Role::findOrFail($id);
 
-            // 2. Update thông tin role
+            // 2. Update role info
             $role->update([
-                'tenNhomQuyen' => $data['tenNhomQuyen'],
+                'role_name' => $data['role_name'],
             ]);
 
-            // 3. Xoá toàn bộ quyền cũ
-            RoleDetail::where('nhomQuyenId', $role->id)->delete();
+            // 3. Delete all old permissions
+            RoleDetail::where('role_id', $role->id)->delete();
 
-            // 4. Chuẩn bị dữ liệu quyền mới
+            // 4. Prepare new permission data
             $roleDetailsData = [];
 
-            //tương tự như insert
             foreach ($data['role_details'] as $roleDetail) {
 
-                // Tìm action tương ứng
-                $action = Action::where('tenChucNang', $roleDetail['tenChucNang'])->firstOrFail();
+                // Find corresponding function
+                $functionCategory = FunctionModel::where('function_name', $roleDetail['function_name'])->firstOrFail(); // NOTE: Action/tenChucNang -> FunctionModel/function_name
 
                 if ($roleDetail['canView']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'    => $role->id,
-                        'chucNangId'  => $action->id,
-                        'hanhdong'  => 'VIEW',
+                        'role_id'     => $role->id,
+                        'function_id' => $functionCategory->id,
+                        'action'      => 'VIEW',
                     ];
                 }
 
                 if ($roleDetail['canCreate']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'    => $role->id,
-                        'chucNangId'  => $action->id,
-                        'hanhdong'  => 'ADD',
+                        'role_id'     => $role->id,
+                        'function_id' => $functionCategory->id,
+                        'action'      => 'ADD',
                     ];
                 }
 
                 if ($roleDetail['canUpdate']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'    => $role->id,
-                        'chucNangId'  => $action->id,
-                        'hanhdong'  => 'UPDATE',
+                        'role_id'     => $role->id,
+                        'function_id' => $functionCategory->id,
+                        'action'      => 'UPDATE',
                     ];
                 }
 
                 if ($roleDetail['canDelete']) {
                     $roleDetailsData[] = [
-                        'nhomQuyenId'    => $role->id,
-                        'chucNangId'  => $action->id,
-                        'hanhdong'  => 'DELETE',
+                        'role_id'     => $role->id,
+                        'function_id' => $functionCategory->id,
+                        'action'      => 'DELETE',
                     ];
                 }
             }
 
-            // 5. Insert batch quyền mới
+            // 5. Batch insert new permissions
             if (!empty($roleDetailsData)) {
                 RoleDetail::insert($roleDetailsData);
             }
-            return $role->load('role_details.action');
+
+            return $role->load('role_details.function');
         });
     }
 
-    public function deleteRoleWithPermissions($id)
+    public function deleteRoleWithPermissions(int $id)
     {
         return DB::transaction(function () use ($id) {
 
-            // 1. Lấy role cần xóa
+            // 1. Get role to delete
             $role = Role::findOrFail($id);
 
-            // 2. Xóa toàn bộ quyền của role
-            RoleDetail::where('nhomQuyenId', $role->id)->delete();
+            // 2. Delete all permissions of the role
+            RoleDetail::where('role_id', $role->id)->delete();
 
-            // 3. Xóa role
+            // 3. Delete role
             $role->delete();
 
             return true;
         });
     }
 
-    public function hasRole($id, $permission)
-    { //cho middleware
+    public function hasRole(int $id, string $permission): bool
+    { // For middleware check
         $role = Role::findOrFail($id);
         if (!$role || !isset($role['role_details'])) {
-            return false; // nếu không có quyền nào trả về false
+            return false; // Return false if no permissions found
         }
 
         $parts = explode('_', $permission, 2);
@@ -240,10 +243,10 @@ class RoleService
         [$action, $function] = $parts;
 
         $actionMap = [
-            'view'    => 'canView',
-            'create'   => 'canCreate',
-            'update'    => 'canUpdate',
-            'delete'    => 'canDelete',
+            'view'   => 'canView',
+            'create' => 'canCreate',
+            'update' => 'canUpdate',
+            'delete' => 'canDelete',
         ];
 
         $field = $actionMap[$action];
@@ -251,16 +254,16 @@ class RoleService
         $roleDetailData = $this->getRoleDetail($role);
 
         foreach ($roleDetailData["role_details"] as $detail) {
-            if ($detail['tenChucNang'] === $function) {
-                return $detail[$field]; // trả true/false
+            if ($detail['function_name'] === $function) {
+                return $detail[$field]; // Returns true/false
             }
         }
 
-        // Log quyền cần và quyền đang có
-        Log::info("Kiểm tra quyền", [
-            'role_id' => $id,
-            'permission_checked' => $permission,
-            'user_has_permission' => $this->getRoleDetail($role),
+        // Log required and existing permissions
+        Log::info("Permission Check", [
+            'role_id'              => $id,
+            'permission_checked'   => $permission,
+            'user_has_permission'  => $this->getRoleDetail($role),
         ]);
 
         return false;

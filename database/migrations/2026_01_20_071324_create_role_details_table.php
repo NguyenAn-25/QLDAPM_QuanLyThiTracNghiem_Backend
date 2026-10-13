@@ -14,11 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('role_details', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('nhomQuyenId')->constrained('roles');
-            $table->foreignId('chucNangId')->constrained('actions');
-            $table->string('hanhDong');
-            $table->unique(['nhomQuyenId', 'chucNangId', 'hanhdong']);
+            $table->id(); 
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
+            $table->foreignId('function_id')->constrained('functions')->onDelete('cascade');
+            $table->string('action');
+            $table->unique(['role_id', 'function_id', 'action']);
             $table->timestamps();
         });
     }

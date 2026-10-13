@@ -6,28 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
-        Schema::table('cau_hois', function (Blueprint $table) {
-            $table->foreignId('chuongId')->nullable()->after('monHocId')->constrained('chuongs')->nullOnDelete();
+        Schema::table('questions', function (Blueprint $table) {
+            $table->foreignId('chapter_id')->nullable()->after('subject_id')->constrained('chapters')->nullOnDelete();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
-        Schema::table('cau_hois', function (Blueprint $table) {
-            $table->dropForeign(['chuongId']);
-            $table->dropColumn('chuongId');
+        Schema::table('questions', function (Blueprint $table) {
+            $table->dropForeign(['chapter_id']);
+            $table->dropColumn('chapter_id');
         });
     }
 };

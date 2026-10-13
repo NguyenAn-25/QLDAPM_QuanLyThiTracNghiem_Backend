@@ -1,18 +1,16 @@
 <?php
 
-use App\Http\Controllers\MonHocController;
+use App\Http\Controllers\SubjectController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/monhocs/get_w_nhp', [MonHocController::class, 'get_w_nhp']);
-Route::get('/monhocs/get_w_chuong', [MonHocController::class, 'get_w_chuong']);
+Route::get('/subjects/with-course-groups', [SubjectController::class, 'getWithCourseGroups']);
+Route::get('/subjects/with-chapters', [SubjectController::class, 'getWithChapters']);
 
-Route::get('/monhocs', [MonHocController::class, 'index']);
-Route::get('/monhocs/{monhoc}', [MonHocController::class, 'show']);
-Route::post('/monhocs', [MonHocController::class, 'store']);
-Route::put('/monhocs/{monhoc}', [MonHocController::class, 'update']);
-Route::delete('/monhocs/{monhoc}', [MonHocController::class, 'destroy']);
+Route::get('/subjects', [SubjectController::class, 'index']);
+Route::get('/subjects/{subject}', [SubjectController::class, 'show']);
+Route::post('/subjects', [SubjectController::class, 'store']);
+Route::put('/subjects/{subject}', [SubjectController::class, 'update']);
+Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy']);
 
-Route::get('/monhocs/get_o_gvien/{user}', [MonHocController::class, 'get_o_gvien']);
-
-
+Route::get('/subjects/teacher/{user}', [SubjectController::class, 'getOfTeacher']);

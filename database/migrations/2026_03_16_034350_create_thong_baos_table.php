@@ -13,25 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('thong_baos', function (Blueprint $table) {
+        Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('tieuDe', 200);
-            $table->text('noiDung');
-
-            $table->timestamp('thoiGianGui')->useCurrent();
-
-            $table->integer('uuTien')->default(0);
-            // độ ưu tiên
-
+            $table->string('title', 200);
+            $table->text('content');
+            $table->timestamp('sent_at')->useCurrent();
+            $table->integer('priority')->default(0);
             $table->boolean('status')->default(true);
-            // true = còn hiển thị, false = đã xóa mềm
-
-            // $table->timestamps();
-
-            // ref
-            $table->foreignId('nguoiGuiId')
-                ->constrained('users');
-            
+            $table->foreignId('sender_id')->constrained('users');
         });
     }
 
@@ -42,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('thong_baos');
+        Schema::dropIfExists('notifications');
     }
 };

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Action;
+use App\Models\FunctionModel;
 use App\Models\Role;
 use App\Models\RoleDetail;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -17,8 +18,8 @@ class RoleDetailSeeder extends Seeder
      */
     public function run() //làm tạm đầy đủ crud
     {
-        $adminRole = Role::where('tenNhomQuyen', 'admin')->first();
-        $adminActions = Action::all();
+        $adminRole = Role::where('role_name', 'admin')->first();
+        $adminActions = FunctionModel::all();
         $roleDetails = [];
 
         $hanhDongs = ["VIEW", "ADD", "UPDATE", "DELETE"];
@@ -26,15 +27,15 @@ class RoleDetailSeeder extends Seeder
         foreach ($adminActions as $adminAction) {
             foreach ($hanhDongs as $hanhDong) {
                 $roleDetails[] = [
-                    "nhomQuyenId" => $adminRole->id,
-                    "chucNangId" => $adminAction->id,
-                    "hanhDong" => $hanhDong
+                    "role_id" => $adminRole->id,
+                    "function_id" => $adminAction->id,
+                    "action" => $hanhDong
                 ];
             }
         }
 
-        $giangVienRole = Role::where('tenNhomQuyen', 'teacher')->first();
-        $giangVienActions = Action::whereIn('tenChucNang', [
+        $giangVienRole = Role::where('role_name', 'teacher')->first();
+        $giangVienActions = FunctionModel::whereIn('function_name', [
             'hoc_phan',
             'cau_hoi',
             'chuong',
@@ -46,9 +47,9 @@ class RoleDetailSeeder extends Seeder
         foreach ($giangVienActions as $giangVienAction) {
             foreach ($hanhDongs as $hanhDong) {
                 $roleDetails[] = [
-                    "nhomQuyenId" => $giangVienRole->id,
-                    "chucNangId" => $giangVienAction->id,
-                    "hanhDong" => $hanhDong
+                    "role_id" => $giangVienRole->id,
+                    "function_id" => $giangVienAction->id,
+                    "action" => $hanhDong
                 ];
             }
         }

@@ -13,18 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('mon_hocs', function (Blueprint $table) {
+        Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->string('maMonHoc')->unique();
-            $table->string('tenMonHoc', 150);
-            $table->integer('soTinChi');
-
-            $table->integer('soTietLyThuyet')->nullable();
-            $table->integer('soTietThucHanh')->nullable();
-
-            $table->boolean('isDeleted')->default(false); // xóa mềm
-
-            // $table->timestamps();
+            $table->string('subject_code')->unique();
+            $table->string('subject_name', 150);
+            $table->integer('credit_count');
+            $table->integer('theory_hours')->nullable();
+            $table->integer('practice_hours')->nullable();
+            $table->boolean('is_deleted')->default(false);
         });
     }
 
@@ -35,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mon_hocs');
+        Schema::dropIfExists('subjects');
     }
 };

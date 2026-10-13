@@ -17,16 +17,16 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             [
-                'tenNhomQuyen' => 'admin'
+                'role_name' => 'admin'
             ],
             [
-                'tenNhomQuyen' => 'teacher'
+                'role_name' => 'teacher'
             ],
         ];
 
         Role::upsert(
             $roles,
-            ['tenNhomQuyen'], // khóa xác định trùng
+            ['role_name'], // khóa xác định trùng
             [] // không update gì khi trùng
         );
     }

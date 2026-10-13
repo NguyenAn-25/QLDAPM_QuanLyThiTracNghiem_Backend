@@ -2,33 +2,33 @@
 
 namespace App\Services;
 
-use App\Models\ChiTietThongBao;
+use App\Models\CourseGroupNotification;
 
-class ChiTietThongBaoService
+class CourseGroupNotificationService
 {
     public function getAll()
     {
-        return ChiTietThongBao::all();
+        return CourseGroupNotification::all();
     }
 
-    public function getOne(ChiTietThongBao $chiTietThongBao)
+    public function getOne(CourseGroupNotification $courseGroupNotification)
     {
-        return $chiTietThongBao;
+        return $courseGroupNotification;
     }
 
     public function add(array $data)
     {
-        return ChiTietThongBao::create($data);
+        return CourseGroupNotification::create($data);
     }
 
-    public function update(array $data, ChiTietThongBao $chiTietThongBao)
+    public function update(array $data, CourseGroupNotification $courseGroupNotification)
     {
-        $chiTietThongBao->update($data);
-        return $chiTietThongBao;
+        $courseGroupNotification->update($data);
+        return $courseGroupNotification;
     }
 
-    public function delete(ChiTietThongBao $chiTietThongBao)
+    public function delete(CourseGroupNotification $courseGroupNotification)
     {
-        return $chiTietThongBao->delete();
+        return $courseGroupNotification->delete();
     }
 }

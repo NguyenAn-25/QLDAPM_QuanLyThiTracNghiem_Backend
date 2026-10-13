@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\ChiTietDeThi;
+use App\Models\ExamQuestion;
 
-class ChiTietDeThiService
+class ExamQuestionService
 {
     public function getAll()
     {
-        return ChiTietDeThi::all();
+        return ExamQuestion::all();
     }
 
-    public function getOne(ChiTietDeThi $chiTietDeThi)
+    public function getOne(ExamQuestion $examQuestion)
     {
-        return $chiTietDeThi;
+        return $examQuestion;
     }
 
     public function add(array $data)
@@ -21,29 +21,29 @@ class ChiTietDeThiService
         //
     }
 
-    public function update(array $data, ChiTietDeThi $chiTietDeThi)
+    public function update(array $data, ExamQuestion $examQuestion)
     {
         //
     }
 
-    public function delete(ChiTietDeThi $chiTietDeThi)
+    public function delete(ExamQuestion $examQuestion)
     {
         //
     }
 
-    public function getChiTietDeThiById(int $deThiId, int $cauHoiId)
+    public function getByExamAndQuestion(int $examId, int $questionId): ExamQuestion
     {
-        return ChiTietDeThi::where('deThiId', $deThiId)
-            ->where('cauHoiId', $cauHoiId)
+        return ExamQuestion::where('exam_id', $examId)
+            ->where('question_id', $questionId)
             ->firstOrFail();
     }
-
-    public function addArr(array $data){
-        return ChiTietDeThi::insert($data);
+    public function addArr(array $data)
+    {
+        return ExamQuestion::insert($data);
     }
 
-    public function deleteByDeThiId(int $deThiId)
+    public function deleteByExamId(int $examId): int
     {
-        return ChiTietDeThi::where('deThiId', $deThiId)->delete();
+        return ExamQuestion::where('exam_id', $examId)->delete();
     }
 }

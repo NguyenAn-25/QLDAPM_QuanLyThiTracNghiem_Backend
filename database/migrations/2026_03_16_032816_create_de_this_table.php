@@ -13,23 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('de_this', function (Blueprint $table) {
+        Schema::create('exams', function (Blueprint $table) {
             $table->id();
-            $table->integer('monThiId');
-
-            $table->string('tenDe', 255);
-
-            $table->dateTime('thoiGianBatDau');
-            $table->dateTime('thoiGianKetThuc');
-
-            $table->integer('thoiGianLamBai'); // phút
-
-            $table->boolean('isDeleted')->default(false);
-
+            $table->foreignId('subject_id')->constrained('subjects');
+            $table->string('exam_name', 255);
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->integer('duration_minutes');
+            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
-
-            $table->foreignId('nguoiTaoId')
-                ->constrained('users');
+            $table->foreignId('creator_id')->constrained('users');
         });
     }
 
@@ -40,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('de_this');
+        Schema::dropIfExists('exams');
     }
 };

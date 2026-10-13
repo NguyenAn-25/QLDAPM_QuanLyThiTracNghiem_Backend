@@ -2,43 +2,43 @@
 
 namespace App\Services;
 
-use App\Models\GiaoBaiThi;
+use App\Models\ExamAssignment;
 
-class GiaoBaiThiService
+class ExamAssignmentService
 {
     public function getAll()
     {
-        return GiaoBaiThi::all();
+        return ExamAssignment::all();
     }
 
-    public function getOne(GiaoBaiThi $giaoBaiThi)
+    public function getOne(ExamAssignment $examAssignment)
     {
-        return $giaoBaiThi;
+        return $examAssignment;
     }
 
-    public function add(array $data)
+    public function add(array $data): ExamAssignment
     {
-        return GiaoBaiThi::create($data);
+        return ExamAssignment::create($data);
     }
 
-    public function update(array $data, GiaoBaiThi $giaoBaiThi)
+    public function update(array $data, ExamAssignment $examAssignment): ExamAssignment
     {
-        $giaoBaiThi->update($data);
-        return $giaoBaiThi;
+        $examAssignment->update($data);
+        return $examAssignment;
     }
 
-    public function delete(GiaoBaiThi $giaoBaiThi)
+    public function delete(ExamAssignment $examAssignment): bool
     {
-        return $giaoBaiThi->delete();
+        return (bool) $examAssignment->delete();
     }
 
-    public function addArr(array $data)
+    public function addArr(array $data): bool
     {
-        return GiaoBaiThi::insert($data);
+        return ExamAssignment::insert($data);
     }
 
-    public function deleteByDeThiId(int $deThiId)
+    public function deleteByExamId(int $examId): int
     {
-        return GiaoBaiThi::where('deThiId', $deThiId)->delete();
+        return ExamAssignment::where('exam_id', $examId)->delete();
     }
 }

@@ -1,13 +1,11 @@
 <?php
 
-use App\Http\Controllers\ChuongController;
+use App\Http\Controllers\ChapterController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/chuongs', [ChuongController::class, 'index']);
-Route::get('/chuongs/{chuong}', [ChuongController::class, 'show']);
-Route::post('/chuongs', [ChuongController::class, 'store']);
-Route::put('/chuongs/{monhoc}', [ChuongController::class, 'update']);
-Route::delete('/chuongs/{chuong}', [ChuongController::class, 'destroy']);
-Route::get('/chuongs/o_monhoc/{monhoc}', [ChuongController::class, 'getByMonHoc']);
-
-
+Route::get('/chapters', [ChapterController::class, 'index']);
+Route::get('/chapters/{chapter}', [ChapterController::class, 'show']);
+Route::post('/chapters', [ChapterController::class, 'store']);
+Route::put('/chapters/{subject}', [ChapterController::class, 'update']);
+Route::delete('/chapters/{chapter}', [ChapterController::class, 'destroy']);
+Route::get('/chapters/by-subject/{subject}', [ChapterController::class, 'getBySubject']);

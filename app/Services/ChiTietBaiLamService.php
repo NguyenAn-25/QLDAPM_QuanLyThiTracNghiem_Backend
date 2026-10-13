@@ -2,71 +2,69 @@
 
 namespace App\Services;
 
-use App\Models\ChiTietBaiLam;
+use App\Models\ExamAttemptAnswer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class ChiTietBaiLamService
+class ExamAttemptAnswerService
 {
     public function getAll()
     {
-        return ChiTietBaiLam::all();
+        return ExamAttemptAnswer::all();
     }
 
-    public function getOne(ChiTietBaiLam $chiTietBaiLam)
+    public function getOne(ExamAttemptAnswer $examAttemptAnswer): ExamAttemptAnswer
     {
-        return $chiTietBaiLam;
+        return $examAttemptAnswer;
     }
 
-    public function add(array $data)
+    public function add(array $data): ExamAttemptAnswer
     {
-        return ChiTietBaiLam::create($data);
+        return ExamAttemptAnswer::create($data);
     }
 
-    public function update(array $data, ChiTietBaiLam $chiTietBaiLam)
+    public function update(array $data, ExamAttemptAnswer $examAttemptAnswer): ExamAttemptAnswer
     {
-        $chiTietBaiLam->update($data);
-        return $chiTietBaiLam;
+        $examAttemptAnswer->update($data);
+        return $examAttemptAnswer;
     }
 
-    public function updateById(array $data, int $bailamId, int $cauHoiId)
+    public function updateById(array $data, int $examAttemptId, int $questionId)
     {
-        $chiTietBaiLam = ChiTietBaiLam::where('baiLamId', $bailamId)
-            ->where('cauHoiId', $cauHoiId)
+        return ExamAttemptAnswer::where('exam_attempt_id', $examAttemptId)
+            ->where('question_id', $questionId)
             ->update($data);
-
-        return $chiTietBaiLam;
     }
 
-    public function delete(ChiTietBaiLam $chiTietBaiLam)
+    public function delete(ExamAttemptAnswer $examAttemptAnswer): bool
     {
-        return $chiTietBaiLam->delete();
+        return (bool) $examAttemptAnswer->delete();
     }
 
-    public function addMany(array $chiTietArray)
+    public function addMany(array $answersArray)
     {
-        return DB::transaction(function () use ($chiTietArray) {
+        return DB::transaction(function () use ($answersArray) {
             $results = [];
-            foreach ($chiTietArray as $data) {
-                $results[] = ChiTietBaiLam::create($data);
+            foreach ($answersArray as $data) {
+                $results[] = ExamAttemptAnswer::create($data);
             }
             return $results;
         });
     }
 
-    public function addManyNonTrans(Collection $chiTiets)
+    public function addManyNonTrans(Collection $answers): array
     {
-        $data = $chiTiets->toArray();
-        ChiTietBaiLam::insert($data);
+        $data = $answers->toArray();
+        ExamAttemptAnswer::insert($data);
         return $data;
     }
 
-    public function updateBatch(array $data)
+    public function updateBatch(array $data): void
     {
-        ChiTietBaiLam::upsert(
+        ExamAttemptAnswer::upsert(
             $data,
-            ['baiLamId', 'cauHoiId'], // unique key
-            ['dapAnId', 'isCorrectChooser', 'diem', 'updated_at'] // những cột cần update
+            ['exam_attempt_id', 'question_id'], // unique composite key
+            ['answer_option_id', 'is_selected_correct', 'score'] // các cột cần update khi bị trùng khóa
         );
     }
 }

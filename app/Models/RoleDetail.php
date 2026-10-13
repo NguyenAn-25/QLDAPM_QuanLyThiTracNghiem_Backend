@@ -8,25 +8,24 @@ use Illuminate\Database\Eloquent\Model;
 class RoleDetail extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        "nhomQuyenId",
-        "chucNangId",
-        "hanhdong"
-    ];
-    
-    protected $hidden = [
-        
-    ];
-    
-    protected $casts = [
-        
+        "role_id",
+        "function_id",
+        "action"
     ];
 
-    public function role(){
-        return $this->belongsTo(Role::class, 'nhomQuyenId');
+    protected $hidden = [];
+
+    protected $casts = [];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
-    public function action(){
-        return $this->belongsTo(Action::class, 'chucNangId');
+    public function function()
+    {
+        return $this->belongsTo(FunctionModel::class, 'function_id');
     }
 }

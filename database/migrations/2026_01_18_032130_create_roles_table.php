@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('tenNhomQuyen', 255);
-            $table->boolean('isDeleted')->default(false);
+            $table->string('role_name', 255);
+            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });
     }

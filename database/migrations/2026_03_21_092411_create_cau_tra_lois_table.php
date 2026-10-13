@@ -13,17 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('cau_tra_lois', function (Blueprint $table) {
+        Schema::create('answer_options', function (Blueprint $table) {
             $table->id();
-
-            $table->text('noiDungLuaChon');
-            $table->boolean('isCorrectAnswer');
-
+            $table->text('option_content');
+            $table->boolean('is_correct_answer');
             $table->timestamps();
-
-            // Foreign key
-            $table->foreignId('cauHoiId')->constrained('cau_hois');
-
+            $table->foreignId('question_id')->constrained('questions');
         });
     }
 
@@ -34,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cau_tra_lois');
+        Schema::dropIfExists('answer_options');
     }
 };

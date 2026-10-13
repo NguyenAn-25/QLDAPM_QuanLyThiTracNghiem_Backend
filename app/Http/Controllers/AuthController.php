@@ -33,13 +33,10 @@ class AuthController extends Controller
         return $this->success($this->authService->me());
     }
 
+
     public function logout()
     {
-        Auth::logout();
-
-        return response()->json([
-            'message' => 'Đăng xuất thành công'
-        ]);
+        return $this->authService->logout();
     }
 
     public function redirectToGoogle(Request $request): RedirectResponse

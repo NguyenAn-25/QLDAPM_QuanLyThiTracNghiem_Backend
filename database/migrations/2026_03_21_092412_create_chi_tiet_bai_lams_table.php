@@ -13,19 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('chi_tiet_bai_lams', function (Blueprint $table) {
-            $table->foreignId('baiLamId')->constrained('bai_lams');
-            $table->foreignId('cauHoiId')->constrained('cau_hois');
-
-            $table->primary(['baiLamId','cauHoiId']);
-
-            $table->boolean('isCorrectChooser')->nullable();
-            $table->decimal('diem', 5, 2)->nullable();
-
+        Schema::create('exam_attempt_answers', function (Blueprint $table) {
+            $table->foreignId('exam_attempt_id')->constrained('exam_attempts');
+            $table->foreignId('question_id')->constrained('questions');
+            $table->primary(['exam_attempt_id', 'question_id']);
+            $table->boolean('is_selected_correct')->nullable();
+            $table->decimal('score', 5, 2)->nullable();
             $table->timestamps();
-
-            // Foreign keys
-            $table->foreignId('dapAnId')->nullable()->constrained('cau_tra_lois');
+            $table->foreignId('answer_option_id')->nullable()->constrained('answer_options');
         });
     }
 
@@ -36,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chi_tiet_bai_lams');
+        Schema::dropIfExists('exam_attempt_answers');
     }
 };

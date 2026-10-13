@@ -13,28 +13,19 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('cau_hois', function (Blueprint $table) {
+        Schema::create('questions', function (Blueprint $table) {
             $table->id();
-
-            $table->text('noiDungCauHoi');
-
-            $table->text('imageUrl')->nullable();
-
-            $table->text('giaiThichDapAn')->nullable();
-            $table->decimal('diemMacDinh', 5, 2)->default(1.00);
-
-            $table->integer('soLuotSuDung')->default(0);
-
+            $table->text('question_content');
+            $table->text('image_url')->nullable();
+            $table->text('answer_explanation')->nullable();
+            $table->decimal('default_score', 5, 2)->default(1.00);
+            $table->integer('usage_count')->default(0);
             $table->enum('status', ['public', 'private', 'archive'])->default('private');
-            $table->boolean('isDeleted')->default(false);
-
+            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
-
-            // Foreign keys
-            $table->unsignedBigInteger('doKhoId')->nullable(); //chỉnh sửa khi có bảng độ khó
-
-            $table->foreignId('monHocId')->constrained('mon_hocs');
-            $table->foreignId('nguoiTaoId')->contrained('users');
+            $table->unsignedBigInteger('difficulty_id')->nullable();
+            $table->foreignId('subject_id')->constrained('subjects');
+            $table->foreignId('creator_id')->constrained('users');
         });
     }
 
@@ -45,6 +36,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cau_hois');
+        Schema::dropIfExists('questions');
     }
 };

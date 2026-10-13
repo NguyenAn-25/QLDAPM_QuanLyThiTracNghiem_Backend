@@ -13,23 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('bai_lams', function (Blueprint $table) {
+        Schema::create('exam_attempts', function (Blueprint $table) {
             $table->id();
-
-            $table->dateTime('thoiGianBatDau');
-            $table->dateTime('thoiGianNopBai')->nullable();
-
-            $table->decimal('tongDiem', 5, 2)->nullable();
-            $table->integer('soCauDung')->nullable();
-
-            $table->enum('status', ['DANG_LAM', 'TAM_LUU', 'DA_NOP', 'BI_HUY'])
-                ->default('DANG_LAM');
-
+            $table->dateTime('start_time');
+            $table->dateTime('submission_time')->nullable();
+            $table->decimal('total_score', 5, 2)->nullable();
+            $table->integer('correct_answer_count')->nullable();
+            $table->enum('status', ['IN_PROGRESS', 'SAVED', 'SUBMITTED', 'CANCELLED'])->default('IN_PROGRESS');
             $table->timestamps();
-
-            //constraint
-            $table->foreignId('thiSinhId')->constrained('users');
-            $table->foreignId('deThiId')->constrained('de_this');
+            $table->foreignId('student_id')->constrained('users');
+            $table->foreignId('exam_id')->constrained('exams');
         });
     }
 
@@ -40,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('bai_lams');
+        Schema::dropIfExists('exam_attempts');
     }
 };

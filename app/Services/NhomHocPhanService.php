@@ -2,163 +2,165 @@
 
 namespace App\Services;
 
+// use App\Models\ChiTietNhom;
+// use App\Models\NhomHocPhan;
+use App\Models\User;
 use App\Exceptions\BusinessException;
 use App\Exceptions\NotFoundException;
-use App\Models\ChiTietNhom;
-use App\Models\NhomHocPhan;
-use App\Models\User;
+use App\Models\CourseGroup;
+use App\Models\CourseGroupStudent;
 use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class NhomHocPhanService
+class CourseGroupService
 {
     public function getAll()
     {
-        return NhomHocPhan::all();
+        return CourseGroup::all();
     }
 
-    public function getOne(NhomHocPhan $nhomHocPhan)
+    public function getOne(CourseGroup $courseGroup)
     {
-        return $nhomHocPhan;
+        return $courseGroup;
     }
 
     public function add(array $data)
     {
-        // nếu chưa có maMoi thì tạo mới
-        if (empty($data['maMoi'])) {
-            $data['maMoi'] = $this->generateUniqueInviteCode();
+        // nếu chưa có join_code thì tạo mới
+        if (empty($data['join_code'])) {
+            $data['join_code'] = $this->generateUniqueInviteCode();
         }
 
-        return NhomHocPhan::create($data);
+        return CourseGroup::create($data);
     }
 
-    public function update(array $data, NhomHocPhan $nhomHocPhan)
+    public function update(array $data, CourseGroup $courseGroup)
     {
-        $nhomHocPhan->update($data);
-        return $nhomHocPhan;
+        $courseGroup->update($data);
+        return $courseGroup;
     }
 
-    public function delete(NhomHocPhan $nhomHocPhan)
+    public function delete(CourseGroup $courseGroup)
     {
-        $nhomHocPhan->update(['isDeleted' => true]);
+        $courseGroup->update(['is_deleted' => true]);
         return true;
     }
 
-    public function hidden(NhomHocPhan $nhomHocPhan)
+    public function hide(CourseGroup $courseGroup)
     {
-        $nhomHocPhan->update(['isHide' => true]);
-        return $nhomHocPhan;
+        $courseGroup->update(['is_hidden' => true]);
+        return $courseGroup;
     }
 
-    public function get_w_gvien_mon(NhomHocPhan $nhomHocPhan)
+    public function getWithTeacherAndSubject(CourseGroup $courseGroup)
     {
-        $nhomHocPhan->load(['giangVien', 'monHoc']);
-        return $nhomHocPhan;
+        $courseGroup->load(['teacher', 'subject']);
+        return $courseGroup;
     }
 
-    public function get_w_dekiemtra(NhomHocPhan $nhomHocPhan)
+    public function getWithExams(CourseGroup $courseGroup)
     {
-        $nhomHocPhan->load(['deThis']);
-        return $nhomHocPhan;
+        $courseGroup->load(['exams']);
+        return $courseGroup;
     }
 
-    public function join_group(array $data)
+    public function joinGroup(array $data)
     {
-        $maMoi = $data["maMoi"];
-        $sinhVienId = $data["sinhVienId"];
+        $joinCode = $data["join_code"];
+        $studentId = $data["student_id"];
 
         // Tìm nhóm học phần theo mã mời
-        $nhomHocPhan = NhomHocPhan::where("maMoi", $maMoi)->first();
+        $courseGroup = CourseGroup::where("join_code", $joinCode)->first();
 
-        if (!$nhomHocPhan) {
+        if (!$courseGroup) {
             throw ValidationException::withMessages([
-                'ma' => ['Mã tham gia không tồn tại'],
+                'code' => ['Invitation code does not exist'],
             ]);
         }
 
         // Kiểm tra sinh viên đã ở trong nhóm chưa
-        $exists = ChiTietNhom::where("sinhVienId", $sinhVienId)
-            ->where("nhomHocPhanId", $nhomHocPhan->id)
+        $exists = CourseGroupStudent::where("student_id", $studentId)
+            ->where("course_group_id", $courseGroup->id)
             ->exists();
 
         if ($exists) {
             throw ValidationException::withMessages([
-                'sinhvien' => ['Sinh viên đã tham gia nhóm này'],
+                'student' => ['Student has already joined this group'],
             ]);
         }
 
         // Tạo chi tiết nhóm
-        $chiTietNhom = [
-            "sinhVienId" => $sinhVienId,
-            "nhomHocPhanId" => $nhomHocPhan->id
+        $courseGroupStudent = [
+            "student_id" => $studentId,
+            "course_group_id" => $courseGroup->id
         ];
 
-        return ChiTietNhom::create($chiTietNhom);
+        return CourseGroupStudent::create($courseGroupStudent);
     }
 
-    public function get_o_svien(User $user)
+    public function getOfStudent(User $user)
     {
         $user->load([
-            'nhomHocPhans.giangVien',
-            'nhomHocPhans.monHoc'
+            'courseGroups.teacher',
+            'courseGroups.subject'
         ]);
         return $user;
     }
 
-    public function get_danh_sach_sinh_vien(NhomHocPhan $nhomHocPhan, ?string $keyword = null): array
+    public function getStudentList(CourseGroup $courseGroup, ?string $keyword = null): array
     {
-        $query = $nhomHocPhan->sinhViens()
-            ->where('users.isStudent', true)
-            ->where('users.isDeleted', false)
-            ->orderBy('users.hoTen');
+        $query = $courseGroup->students()
+            ->where('users.is_student', true)
+            ->where('users.is_deleted', false)
+            ->orderBy('users.full_name');
 
         if (!empty($keyword)) {
             $keyword = trim($keyword);
             $query->where(function ($q) use ($keyword) {
-                $q->where('users.hoTen', 'like', "%{$keyword}%")
+                $q->where('users.full_name', 'like', "%{$keyword}%")
                     ->orWhere('users.username', 'like', "%{$keyword}%")
                     ->orWhere('users.email', 'like', "%{$keyword}%");
             });
         }
 
-        $sinhViens = $query->get()->makeHidden('pivot');
+        $students = $query->get()->makeHidden('pivot');
 
-        if (empty($keyword) && $sinhViens->isEmpty()) {
-            throw new NotFoundException('Nhóm học phần chưa có sinh viên, vui lòng thêm sinh viên mới.');
+        if (empty($keyword) && $students->isEmpty()) {
+            throw new NotFoundException('Course group has no students yet, please add new students.');
         }
 
         return [
-            'nhomHocPhanId' => $nhomHocPhan->id,
-            'soLuongSinhVien' => $sinhViens->count(),
+            'course_group_id' => $courseGroup->id,
+            'total_students' => $students->count(),
             'keyword' => $keyword,
-            'sinhViens' => $sinhViens,
+            'students' => $students,
         ];
     }
 
-    public function getSinhViensExport(NhomHocPhan $nhomHocPhan, ?string $keyword = null): array
+    public function getStudentsExport(CourseGroup $courseGroup, ?string $keyword = null): array
     {
-        $danhSach = $this->get_danh_sach_sinh_vien($nhomHocPhan, $keyword);
-        $sinhViens = collect($danhSach['sinhViens']);
+        $list = $this->getStudentList($courseGroup, $keyword);
+        $students = collect($list['students']);
 
-        $rows = $sinhViens->values()->map(function ($sinhVien, $index) {
-            $ngaySinh = $sinhVien->ngaySinh ? $sinhVien->ngaySinh->format('d-m-Y') : '';
+        $rows = $students->values()->map(function ($student, $index) {
+            $date_of_birth = $student->date_of_birth ? $student->date_of_birth->format('d-m-Y') : '';
 
             return [
                 $index + 1,
-                $sinhVien->username,
-                $sinhVien->hoTen,
-                $sinhVien->email,
-                $sinhVien->sdt,
-                $ngaySinh,
+                $student->username,
+                $student->full_name,
+                $student->email,
+                $student->phone,
+                $date_of_birth,
             ];
         })->toArray();
 
         return [
             'fileNameAttributes' => [
-                'namHoc' => $nhomHocPhan->namHoc,
-                'hocKy' => $nhomHocPhan->hocKy,
-                'tenNhomHocPhan' => $nhomHocPhan->tenNhom,
-                'idNhomHocPhan' => $nhomHocPhan->id,
+                'academic_year' => $courseGroup->academic_year,
+                'semester' => $courseGroup->semester,
+                'course_group_name' => $courseGroup->group_name,
+                'course_group_id' => $courseGroup->id,
             ],
             'headerTitles' => [
                 'STT',
@@ -172,7 +174,7 @@ class NhomHocPhanService
         ];
     }
 
-    public function importSinhViensToNhom(NhomHocPhan $nhomHocPhan, array $rows): array
+    public function importStudentsToGroup(CourseGroup $courseGroup, array $rows): array
     {
         $missing = [];
         $added = [];
@@ -182,35 +184,35 @@ class NhomHocPhanService
                 continue;
             }
 
-            $mssv = isset($row[1]) ? trim((string)$row[1]) : null;
+            $studentCode = isset($row[1]) ? trim((string)$row[1]) : null;
 
-            if (empty($mssv)) {
+            if (empty($studentCode)) {
                 continue;
             }
 
             $headerTitles = ['Tên đăng nhập', 'MSSV', 'STT', 'Username', 'Student ID', 'ID'];
-            if (in_array($mssv, $headerTitles, true)) {
+            if (in_array($studentCode, $headerTitles, true)) {
                 continue;
             }
 
-            $user = User::query()->where('username', $mssv)->first();
+            $user = User::query()->where('username', $studentCode)->first();
             if (!$user) {
                 $missing[] = [
-                    'dòng' => $rowIndex + 2,
-                    'username' => $mssv,
-                    'hoTen' => isset($row[2]) ? trim((string)$row[2]) : null,
+                    'row' => $rowIndex + 2,
+                    'username' => $studentCode,
+                    'full_name' => isset($row[2]) ? trim((string)$row[2]) : null,
                     'email' => isset($row[3]) ? trim((string)$row[3]) : null,
-                    'sdt' => isset($row[4]) ? trim((string)$row[4]) : null,
-                    'ngaySinh' => $this->normalizeImportedBirthDate($row[5] ?? null),
+                    'phone' => isset($row[4]) ? trim((string)$row[4]) : null,
+                    'date_of_birth' => $this->normalizeImportedBirthDate($row[5] ?? null),
                 ];
                 continue;
             }
 
             try {
-                $this->add_sinh_vien_to_nhom($user->username, $nhomHocPhan);
-                $added[] = ['id' => $user->id, 'username' => $user->username, 'hoTen' => $user->hoTen];
+                $this->addStudentToGroup($user->username, $courseGroup);
+                $added[] = ['id' => $user->id, 'username' => $user->username, 'full_name' => $user->full_name];
             } catch (BusinessException $e) {
-                if (str_contains($e->getMessage(), 'đã có trong nhóm')) {
+                if (str_contains($e->getMessage(), 'already in the group')) {
                     continue;
                 }
                 throw $e;
@@ -218,7 +220,7 @@ class NhomHocPhanService
         }
 
         if (empty($added) && !empty($missing)) {
-            throw new NotFoundException('Không sinh viên nào được thêm vào nhóm vì tất cả đều chưa có tài khoản hệ thống:', $missing);
+            throw new NotFoundException('No students were added to the group because none of them have a system account:', $missing);
         }
 
         return [
@@ -228,41 +230,40 @@ class NhomHocPhanService
         ];
     }
 
-    public function add_sinh_vien_to_nhom(string $username, NhomHocPhan $nhomHocPhan)
+    public function addStudentToGroup(string $username, CourseGroup $courseGroup)
     {
         $user = User::query()->where('username', $username)->first();
 
         if (!$user) {
-            throw new NotFoundException('Người dùng không tồn tại');
+            throw new NotFoundException('User does not exist');
         }
 
-        if (!$user->isStudent) {
-            throw new BusinessException('Người dùng không phải là sinh viên');
+        if (!$user->is_student) {
+            throw new BusinessException('User is not a student');
         }
 
-        if ($user->isDeleted) {
-            throw new BusinessException('Người dùng đã bị xóa');
+        if ($user->is_deleted) {
+            throw new BusinessException('User has been deleted');
         }
 
-
-        $exists = ChiTietNhom::where('sinhVienId', $user->id)
-            ->where('nhomHocPhanId', $nhomHocPhan->id)
+        $exists = CourseGroupStudent::where('student_id', $user->id)
+            ->where('course_group_id', $courseGroup->id)
             ->exists();
 
         if ($exists) {
-            throw new BusinessException('Sinh viên đã có trong nhóm học phần này');
+            throw new BusinessException('Student is already in this course group');
         }
 
-        return ChiTietNhom::create([
-            'sinhVienId' => $user->id,
-            'nhomHocPhanId' => $nhomHocPhan->id,
+        return CourseGroupStudent::create([
+            'student_id' => $user->id,
+            'course_group_id' => $courseGroup->id,
         ]);
     }
 
-    public function resetInviteCode(NhomHocPhan $nhomHocPhan)
+    public function resetInviteCode(CourseGroup $courseGroup)
     {
-        $nhomHocPhan->update(['maMoi' => $this->generateUniqueInviteCode()]);
-        return $nhomHocPhan;
+        $courseGroup->update(['join_code' => $this->generateUniqueInviteCode()]);
+        return $courseGroup;
     }
 
     private function generateUniqueInviteCode(int $length = 8): string
@@ -275,49 +276,49 @@ class NhomHocPhanService
             for ($i = 0; $i < $length; $i++) {
                 $code .= $characters[random_int(0, $maxIndex)];
             }
-        } while (NhomHocPhan::query()->where('maMoi', $code)->exists());
+        } while (CourseGroup::query()->where('join_code', $code)->exists());
 
         return $code;
     }
 
-    public function getAssignedTeachingByLecturerId(int $lecturerId, bool $includeHidden = false): array
+    public function getAssignedTeachingByTeacherId(int $lecturerId, bool $includeHidden = false): array
     {
-        $query = NhomHocPhan::query()
-            ->with(['monHoc', 'deThis'])
-            ->where('giangVienId', $lecturerId)
-            ->where('isDeleted', false)
+        $query = CourseGroup::query()
+            ->with(['subject', 'exams'])
+            ->where('teacher_id', $lecturerId)
+            ->where('is_deleted', false)
             ->orderByDesc('id');
 
         if (!$includeHidden) {
-            $query->where('isHide', false);
+            $query->where('is_hidden', false);
         }
 
-        $nhomHocPhans = $query->get();
+        $courseGroups = $query->get();
 
-        $monHocs = $nhomHocPhans
-            ->pluck('monHoc')
+        $subjects = $courseGroups
+            ->pluck('subject')
             ->filter()
             ->unique('id')
             ->values();
 
         return [
-            'nhomHocPhans' => $nhomHocPhans,
-            'monHocs' => $monHocs,
+            'course_groups' => $courseGroups,
+            'subjects' => $subjects,
             'summary' => [
-                'soNhomHocPhan' => $nhomHocPhans->count(),
-                'soMonHoc' => $monHocs->count(),
+                'total_course_groups' => $courseGroups->count(),
+                'total_subjects' => $subjects->count(),
             ],
         ];
     }
 
-    public function remove_sinh_vien_from_nhom(int $sinhVienId, NhomHocPhan $nhomHocPhan): bool
+    public function removeStudentFromGroup(int $studentId, CourseGroup $courseGroup): bool
     {
-        $deleted = ChiTietNhom::where('sinhVienId', $sinhVienId)
-            ->where('nhomHocPhanId', $nhomHocPhan->id)
+        $deleted = CourseGroupStudent::where('student_id', $studentId)
+            ->where('course_group_id', $courseGroup->id)
             ->delete();
 
         if ($deleted === 0) {
-            throw new NotFoundException('Sinh viên không tồn tại trong nhóm học phần này');
+            throw new NotFoundException('Student does not exist in this course group');
         }
 
         return true;
@@ -358,21 +359,21 @@ class NhomHocPhanService
         return $raw;
     }
 
-    public function get_with_tbao(NhomHocPhan $nhomHocPhan)
+    public function getWithNotifications(CourseGroup $courseGroup)
     {
-        $nhomHocPhan->load('thongBaos.nguoiGui');
-        return ($nhomHocPhan);
+        $courseGroup->load('notifications.sender');
+        return $courseGroup;
     }
 
-    public function get_for_detail_sv(NhomHocPhan $nhomHocPhan)
+    public function getForStudentDetail(CourseGroup $courseGroup)
     {
-        $nhomHocPhan->load(['thongBaos.nguoiGui', "deThis", "sinhViens", "giangVien"]);
-        return ($nhomHocPhan);
+        $courseGroup->load(['notifications.sender', 'exams', 'students', 'teacher']);
+        return $courseGroup;
     }
 
-    public function get_o_gvien(User $user)
+    public function getOfTeacher(User $user)
     {
-        $nhomHocPhan = $user->quanLyNhomHocPhans;
-        return $nhomHocPhan;
+        $courseGroups = $user->managedCourseGroups;
+        return $courseGroups;
     }
 }

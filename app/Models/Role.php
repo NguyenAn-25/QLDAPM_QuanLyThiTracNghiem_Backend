@@ -10,19 +10,20 @@ class Role extends Model
     use HasFactory;
 
     protected $fillable = [
-        "tenNhomQuyen",
+        "role_name",
     ];
 
     protected $hidden = [];
 
     protected $casts = [];
 
-    public function role_details(){
-        return $this->hasMany(RoleDetail::class, 'nhomQuyenId');
+    public function roleDetails()
+    {
+        return $this->hasMany(RoleDetail::class, 'role_id');
     }
 
-    public function users(){
-        return $this->hasMany(User::class, 'nhomQuyenId');
+    public function users()
+    {
+        return $this->hasMany(User::class, 'role_id');
     }
-
 }

@@ -13,29 +13,22 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('cau_hinh_this', function (Blueprint $table) {
-            $table->id('cauHinhId');
-            $table->foreignId('deThiId')->unique()->constrained('de_this');
-
-            $table->boolean('hasMonitoring')->default(false);
-
-            $table->integer('limitQuestionPerPage')->default(-1);
-            $table->boolean('allowBackLastQuestion')->default(true);
-
-            $table->boolean('allowCopy')->default(false);
-            $table->boolean('allowPrint')->default(false);
-            $table->boolean('isEnableResume')->default(false);
-
-            $table->boolean('shuffleQuestions')->default(true);
-            $table->boolean('shuffleAnswers')->default(true);
-
-            $table->boolean('showScore')->default(true);
-            $table->boolean('showDetailResults')->default(true);
-
-            $table->boolean('isLimitSwitchTab')->default(false);
-            $table->integer('tabSwitchLimit')->default(999);
-            $table->text('messageOnWarning')->nullable();
-
+        Schema::create('exam_configurations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('exam_id')->unique()->constrained('exams');
+            $table->boolean('has_monitoring')->default(false);
+            $table->integer('limit_questions_per_page')->default(-1);
+            $table->boolean('allow_back_last_question')->default(true);
+            $table->boolean('allow_copy')->default(false);
+            $table->boolean('allow_print')->default(false);
+            $table->boolean('is_enable_resume')->default(false);
+            $table->boolean('shuffle_questions')->default(true);
+            $table->boolean('shuffle_answers')->default(true);
+            $table->boolean('show_score')->default(true);
+            $table->boolean('show_detail_results')->default(true);
+            $table->boolean('is_limit_switch_tab')->default(false);
+            $table->integer('tab_switch_limit')->default(999);
+            $table->text('message_on_warning')->nullable();
             $table->timestamps();
         });
     }
@@ -47,6 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cau_hinh_this');
+        Schema::dropIfExists('exam_configurations');
     }
 };

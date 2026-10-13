@@ -13,13 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('log_bai_lams', function (Blueprint $table) {
+        Schema::create('exam_attempt_logs', function (Blueprint $table) {
             $table->id();
-            $table->integer('soLanChuyenTab')->default(0);
+            $table->integer('tab_switch_count')->default(0);
             $table->timestamps();
-
-            // Foreign key
-            $table->foreignId('baiLamId')->constrained('bai_lams');
+            $table->foreignId('exam_attempt_id')->constrained('exam_attempts');
         });
     }
 
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('log_bai_lams');
+        Schema::dropIfExists('exam_attempt_logs');
     }
 };

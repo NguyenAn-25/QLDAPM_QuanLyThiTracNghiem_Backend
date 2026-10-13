@@ -21,25 +21,24 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $fillable = [
-        'hoTen',
+        'full_name',
         'email',
         'password',
-        'nhomQuyenId',
-        'sdt',
-        "username",
-        "ngaySinh",
-        "laGioiTinhNu",
-        "isStudent",
-        "isLocked",
-        "ggid",
-        "urlAvatar",
-        "isLocked",
-        "isDeleted",
+        'role_id',
+        'phone_number',
+        'username',
+        'date_of_birth',
+        'is_female',
+        'is_student',
+        'is_locked',
+        'google_id',
+        'avatar_url',
+        'is_deleted',
     ];
 
     protected $attributes = [
-        'urlAvatar' => "example.png",
-        'isStudent' => true,
+        'avatar_url' => 'example.png',
+        'is_student' => true,
     ];
 
     /**
@@ -58,15 +57,15 @@ class User extends Authenticatable implements JWTSubject
      * @var array<string, string>
      */
     protected $casts = [
-        'ngaySinh' => 'date:Y-m-d',       // tự động cast sang Carbon (chỉ date)
-        'laGioiTinhNu' => 'boolean',
-        'isStudent' => 'boolean',
-        'isLocked' => 'boolean',
-        'isDeleted' => 'boolean',
-        'lastLogin' => 'datetime',
+        'date_of_birth' => 'date:Y-m-d',
+        'is_female' => 'boolean',
+        'is_student' => 'boolean',
+        'is_locked' => 'boolean',
+        'is_deleted' => 'boolean',
+        'last_login' => 'datetime',
         'email_verified_at' => 'datetime',
     ];
-    
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -84,25 +83,28 @@ class User extends Authenticatable implements JWTSubject
         );
     }
 
-    public function nhomHocPhans()
+    public function courseGroups()
     {
-        return $this->belongsToMany(NhomHocPhan::class, "chi_tiet_nhoms", "sinhVienId", "nhomHocPhanId");
+        return $this->belongsToMany(CourseGroup::class, 'course_group_students', 'student_id', 'course_group_id');
     }
 
-    public function quanLyNhomHocPhans(){
-        return $this->hasMany(NhomHocPhan::class, "giangVienId");
-    }
-
-    public function monHocs()
+    public function managedCourseGroups()
     {
-        return $this->belongsToMany(MonHoc::class, "phan_congs", "giangVienId", "monHocId");
+        return $this->hasMany(CourseGroup::class, 'teacher_id');
     }
 
-    public function baiLams(){
-        return $this->hasMany(BaiLam::class, "thiSinhId");
+    public function assignedSubjects()
+    {
+        return $this->belongsToMany(Subject::class, 'teacher_assignments', 'teacher_id', 'subject_id');
     }
 
-    public function role(){
-        return $this->belongsTo(Role::class, "nhomQuyenId");
+    public function examAttempts()
+    {
+        return $this->hasMany(ExamAttempt::class, 'student_id');
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
 }

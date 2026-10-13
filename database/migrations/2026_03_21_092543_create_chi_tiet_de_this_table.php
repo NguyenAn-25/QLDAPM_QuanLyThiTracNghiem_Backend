@@ -13,15 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('chi_tiet_de_this', function (Blueprint $table) {
-            $table->foreignId('cauHoiId')->constrained('cau_hois');
-            $table->foreignId('deThiId')->constrained('de_this');
-
-            $table->primary(['cauHoiId','deThiId']);
-
-            $table->integer('thuTu');
-            $table->decimal('diem', 5, 2)->default(1.00);
-
+        Schema::create('exam_questions', function (Blueprint $table) {
+            $table->foreignId('question_id')->constrained('questions');
+            $table->foreignId('exam_id')->constrained('exams');
+            $table->primary(['question_id', 'exam_id']);
+            $table->integer('question_order');
+            $table->decimal('score', 5, 2)->default(1.00);
             $table->timestamps();
         });
     }
@@ -33,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chi_tiet_de_this');
+        Schema::dropIfExists('exam_questions');
     }
 };

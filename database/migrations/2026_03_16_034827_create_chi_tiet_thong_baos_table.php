@@ -13,19 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('chi_tiet_thong_baos', function (Blueprint $table) {
-            // foreign key tới bảng tài khoản
-            $table->foreignId('nhomHocPhanId')
-                ->constrained('nhom_hoc_phans');
-
-            // foreign key tới bảng thông báo
-            $table->foreignId('thongBaoId')
-                ->constrained('thong_baos');
-
-            // primary key kép
-            $table->primary(['nhomHocPhanId', 'thongBaoId']);
-
-
+        Schema::create('course_group_notifications', function (Blueprint $table) {
+            $table->foreignId('course_group_id')->constrained('course_groups');
+            $table->foreignId('notification_id')->constrained('notifications');
+            $table->primary(['course_group_id', 'notification_id']);
         });
     }
 
@@ -36,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chi_tiet_thong_baos');
+        Schema::dropIfExists('course_group_notifications');
     }
 };

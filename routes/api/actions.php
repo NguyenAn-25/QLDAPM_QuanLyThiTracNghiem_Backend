@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ActionController;
+use App\Http\Controllers\FunctionController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/actions', [ActionController::class, 'index']);
+Route::get('/actions', [FunctionController::class, 'index']);

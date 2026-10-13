@@ -2,76 +2,76 @@
 
 namespace App\Services;
 
-use App\Models\ChiTietThongBao;
-use App\Models\ThongBao;
+use App\Models\CourseGroupNotification;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-class ThongBaoService
+class NotificationService
 {
     public function getAll()
     {
-        return ThongBao::all()->load(["nguoiGui", "nhomHocPhans.monHoc"]);
+        return Notification::all()->load(["sender", "courseGroups.subject"]);
     }
 
-    public function getOne(ThongBao $thongBao)
+    public function getOne(Notification $notification)
     {
-        return $thongBao;
+        return $notification;
     }
 
     public function add(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $thongBao = ThongBao::create($data);
+            $notification = Notification::create($data);
 
-            $nhomHocPhanIds = $data["nhomHocPhanIds"];
-            $chiTietThongBaos = collect($nhomHocPhanIds)->map(
-                function ($nhomHocPhanId) use ($thongBao) {
+            $courseGroupIds = $data["course_group_ids"];
+            $courseGroupNotifications = collect($courseGroupIds)->map(
+                function ($courseGroupId) use ($notification) {
                     return ([
-                        "nhomHocPhanId" => $nhomHocPhanId,
-                        "thongBaoId" => $thongBao->id,
+                        "course_group_id" => $courseGroupId,
+                        "notification_id" => $notification->id,
                     ]);
                 }
             )->toArray();
 
-            $chiTietThongBao = ChiTietThongBao::insert($chiTietThongBaos);
+            $courseGroupNotification = CourseGroupNotification::insert($courseGroupNotifications);
 
             return ([
-                "thongBao" => $thongBao,
-                "chiTietThongBao" => $chiTietThongBaos
+                "notification" => $notification,
+                "courseGroupNotification" => $courseGroupNotifications
             ]);
         });
     }
 
-    public function update(array $data, ThongBao $thongBao)
+    public function update(array $data, Notification $notification)
     {
-        return DB::transaction(function () use ($data, $thongBao) {
+        return DB::transaction(function () use ($data, $notification) {
 
             // 1. Update thông báo
-            $thongBao->update($data);
+            $notification->update($data);
 
             // 2. Xóa toàn bộ chi tiết thông báo cũ
-            $thongBao->chiTietThongBaos()->delete();
+            $notification->courseGroupNotifications()->delete();
 
             // 3. Thêm mới chi tiết thông báo
-            if (!empty($data['nhomHocPhanIds'])) {
-                $chiTietData = array_map(function ($nhomHocPhanId) use ($thongBao) {
+            if (!empty($data['course_group_ids'])) {
+                $chiTietData = array_map(function ($courseGroupId) use ($notification) {
                     return [
-                        'thongBaoId' => $thongBao->id,
-                        'nhomHocPhanId' => $nhomHocPhanId,
+                        'notification_id' => $notification->id,
+                        'course_group_id' => $courseGroupId,
                     ];
-                }, $data['nhomHocPhanIds']);
+                }, $data['course_group_ids']);
 
-                $thongBao->chiTietThongBaos()->insert($chiTietData);
+                $notification->courseGroupNotifications()->insert($chiTietData);
             }
 
-            return $thongBao->load('chiTietThongBaos');
+            return $notification->load('courseGroupNotifications');
         });
     }
 
-    public function delete(ThongBao $thongBao)
+    public function delete(Notification $notification)
     {
-        $thongBao->chiTietThongBaos()->delete();
-        return $thongBao->delete();
+        $notification->courseGroupNotifications()->delete();
+        return $notification->delete();
     }
 }

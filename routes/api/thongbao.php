@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\ThongBaoController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/thongbaos', [ThongBaoController::class, 'index']);
-Route::get('/thongbaos/{thongbao}', [ThongBaoController::class, 'show']);
-Route::post('/thongbaos', [ThongBaoController::class, 'store']);
-Route::put('/thongbaos/{thongbao}', [ThongBaoController::class, 'update']);
-Route::delete('/thongbaos/{thongbao}', [ThongBaoController::class, 'destroy']);
+Route::get('/notifications', [NotificationController::class, 'index']);
+Route::get('/notifications/{notification}', [NotificationController::class, 'show']);
+Route::post('/notifications', [NotificationController::class, 'store']);
+Route::put('/notifications/{notification}', [NotificationController::class, 'update']);
+Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy']);

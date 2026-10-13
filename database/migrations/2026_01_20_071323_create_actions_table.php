@@ -11,13 +11,14 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+public function up()
     {
-        Schema::create('actions', function (Blueprint $table) {
+        Schema::create('functions', function (Blueprint $table) {
             $table->id();
-            $table->string('tenChucNang');
-            $table->string('urlIcon');
-            $table->boolean('isDeleted')->default(false);
+            $table->string('function_name');
+            $table->string('icon_url');
+            $table->boolean('is_deleted')->default(false);
+
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('actions');
+        Schema::dropIfExists('functions');
     }
 };

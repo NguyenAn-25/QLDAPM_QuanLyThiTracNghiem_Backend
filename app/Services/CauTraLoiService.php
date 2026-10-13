@@ -1,32 +1,32 @@
 <?php
 
 namespace App\Services;
-use App\Models\CauTraLoi;
+use App\Models\AnswerOption;
 
-class CauTraLoiService{
+class AnswerOptionService{
     public function getAll()
     {
-        return CauTraLoi::all();
+        return AnswerOption::all();
     }
 
-    public function getOne(CauTraLoi $cauTraLoi)
+    public function getOne(AnswerOption $answerOption)
     {
-        return $cauTraLoi;
+        return $answerOption;
     }
 
     public function add(array $data)
     {
-        return CauTraLoi::create($data);
+        return AnswerOption::create($data);
     }
 
-    public function update(array $data, CauTraLoi $cauTraLoi)
+    public function update(array $data, AnswerOption $answerOption)
     {
-        $cauTraLoi->update($data);
-        return $cauTraLoi;
+        $answerOption->update($data);
+        return $answerOption;
     }
 
-    public function delete(CauTraLoi $cauTraLoi)
+    public function delete(AnswerOption $answerOption)
     {
-        return $cauTraLoi->delete();
+        return $answerOption->delete();
     }
 }
