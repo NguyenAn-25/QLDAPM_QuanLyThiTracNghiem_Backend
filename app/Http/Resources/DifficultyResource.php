@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ChapterResource extends JsonResource
+class DifficultyResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,11 +15,8 @@ class ChapterResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'        => $this->id,
-            'tenChuong' => $this->tenChuong,
-            'monHocId'  => $this->monHocId,
-            'monHoc'    => new SubjectResource($this->whenLoaded('monHoc')),
-            'isDeleted' => $this->isDeleted,
+            "id" => $this->id,
+            "difficulty_name" => $this->difficulty_name
         ];
     }
 }
