@@ -24,14 +24,14 @@ class UpdateSubjectRequest extends FormRequest
     public function rules()
     {
         return [
-            'tenMonHoc' => 'sometimes|string|max:150',
+            'subject_name' => 'sometimes|string|max:150',
 
-            'soTinChi' => 'sometimes|integer|min:1',
+            'credit_count' => 'sometimes|integer|min:1',
 
-            'soTietLyThuyet' => 'sometimes|integer|min:0',
-            'soTietThucHanh' => 'sometimes|integer|min:0',
+            'theory_hours' => 'sometimes|integer|min:0',
+            'practice_hours' => 'sometimes|integer|min:0',
 
-            'isDeleted' => 'sometimes|boolean',
+            'is_deleted' => 'sometimes|boolean',
         ];
     }
 }

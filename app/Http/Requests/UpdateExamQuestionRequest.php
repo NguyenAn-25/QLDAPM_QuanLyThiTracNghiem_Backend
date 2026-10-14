@@ -24,25 +24,25 @@ class UpdateExamQuestionRequest extends FormRequest
     public function rules()
     {
         return [
-            "cauHoiId" => [
+            "question_id" => [
                 "required",
                 "integer",
-                "exists:cau_hois,id",
+                "exists:questions,id",
             ],
 
-            "deThiId" => [
+            "exam_id" => [
                 "required",
                 "integer",
-                "exists:de_this,id"
+                "exists:exams,id"
             ],
 
-            "thutu" => [
+            "question_order" => [
                 "sometimes",
                 "integer",
                 "min:1",
             ],
 
-            "diem" => [
+            "score" => [
                 "sometimes",
                 "numeric",
                 "min:0"

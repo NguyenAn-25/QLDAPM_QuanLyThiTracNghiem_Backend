@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreExamAttemptAnswerRequest extends FormRequest
 {
@@ -24,34 +25,66 @@ class StoreExamAttemptAnswerRequest extends FormRequest
     public function rules()
     {
         return [
-            "baiLamId" => [
+            "exam_attempt_id" => [
                 "required",
                 "integer",
-                "exists:bai_lams,id"
+                "exists:exam_attempts,id",
             ],
 
-            "cauHoiId" => [
+            "question_id" => [
                 "required",
                 "integer",
-                "exists:cau_hois,id"
+                "exists:questions,id",
+                Rule::unique('exam_attempt_answers')->where(
+                    fn ($query) => $query->where('exam_attempt_id', $this->input('exam_attempt_id'))
+                ),
             ],
 
-            "dapAnId" => [
+            "answer_option_id" => [
                 "nullable",
                 "integer",
-                "exists:cau_tra_lois,id"
+                "exists:answer_options,id",
             ],
 
-            "isCorrectChooser" => [
+            "is_selected_correct" => [
                 "nullable",
-                "boolean"
+                "boolean",
             ],
 
-            "diem" => [
+            "score" => [
                 "nullable",
                 "numeric",
-                "min:0"
+                "min:0",
             ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'exam_attempt_id.required' => 'Vui lòng chọn bài làm.',
+            'exam_attempt_id.integer' => 'Mã bài làm không hợp lệ.',
+            'exam_attempt_id.exists' => 'Bài làm không tồn tại.',
+            'question_id.required' => 'Vui lòng chọn câu hỏi.',
+            'question_id.integer' => 'Mã câu hỏi không hợp lệ.',
+            'question_id.exists' => 'Câu hỏi không tồn tại.',
+            'question_id.unique' => 'Câu hỏi đã có câu trả lời trong bài làm này.',
+            'answer_option_id.integer' => 'Mã đáp án không hợp lệ.',
+            'answer_option_id.exists' => 'Đáp án không tồn tại.',
+            'is_selected_correct.boolean' => 'Trạng thái đáp án đúng phải là kiểu đúng/sai.',
+            'score.numeric' => 'Điểm phải là số.',
+            'score.min' => 'Điểm không được nhỏ hơn 0.',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'exam_attempt_id' => 'Bài làm',
+            'question_id' => 'Câu hỏi',
+            'answer_option_id' => 'Đáp án',
+            'is_selected_correct' => 'Trạng thái đáp án đúng',
+            'score' => 'Điểm',
         ];
     }
 }

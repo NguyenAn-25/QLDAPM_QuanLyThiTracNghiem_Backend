@@ -24,7 +24,7 @@ class UpdateExamAttemptLogRequest extends FormRequest
     public function rules()
     {
         return [
-            "soLanChuyenTab" => [
+            "tab_switch_count" => [
                 "sometimes",
                 "integer",
                 "min:0"

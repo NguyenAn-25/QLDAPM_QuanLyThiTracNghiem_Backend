@@ -14,80 +14,79 @@ class UpdateQuestionRequest extends FormRequest
     public function rules()
     {
         return [
-            'monHocId' => ['sometimes', 'integer', 'exists:mon_hocs,id'],
-            'chuongId' => ['sometimes', 'nullable', 'integer', 'exists:chuongs,id'],
-            'doKhoId' => ['sometimes', 'nullable', 'integer', 'exists:do_khos,id'],
-            'nguoiTaoId' => ['sometimes', 'integer', 'exists:users,id'],
-            'noiDungCauHoi' => ['sometimes', 'string'],
-            'imageUrl' => ['sometimes', 'nullable', 'string'],
-            'giaiThichDapAn' => ['sometimes', 'nullable', 'string'],
-            'diemMacDinh' => ['sometimes', 'numeric', 'min:0'],
+            'subject_id' => ['sometimes', 'integer', 'exists:subjects,id'],
+            'chapter_id' => ['sometimes', 'nullable', 'integer', 'exists:chapters,id'],
+            'difficulty_id' => ['sometimes', 'nullable', 'integer', 'exists:difficulties,id'],
+            'creator_id' => ['sometimes', 'integer', 'exists:users,id'],
+            'question_content' => ['sometimes', 'string'],
+            'image_url' => ['sometimes', 'nullable', 'string'],
+            'answer_explanation' => ['sometimes', 'nullable', 'string'],
+            'default_score' => ['sometimes', 'numeric', 'min:0'],
             'status' => ['sometimes', 'in:public,private,archive'],
-            'isDeleted' => ['sometimes', 'boolean'],
-            'cauTraLois' => ['sometimes', 'array', 'min:2'],
-            'cauTraLois.*.id' => ['sometimes', 'integer', 'exists:cau_tra_lois,id'],
-            'cauTraLois.*.noiDungLuaChon' => ['required_with:cauTraLois', 'string', 'max:1000'],
-            'cauTraLois.*.isCorrectAnswer' => ['required_with:cauTraLois', 'boolean'],
+            'is_deleted' => ['sometimes', 'boolean'],
+            'answerOptions' => ['sometimes', 'array', 'min:2'],
+            'answerOptions.*.id' => ['sometimes', 'integer', 'exists:answer_options,id'],
+            'answerOptions.*.option_content' => ['required_with:answerOptions', 'string'],
+            'answerOptions.*.is_correct_answer' => ['required_with:answerOptions', 'boolean'],
         ];
     }
 
     public function messages()
     {
         return [
-            'monHocId.integer' => ':attribute phải là số nguyên',
-            'monHocId.exists' => ':attribute không tồn tại trong hệ thống',
+            'subject_id.integer' => ':attribute phải là số nguyên',
+            'subject_id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'chuongId.integer' => ':attribute phải là số nguyên',
-            'chuongId.exists' => ':attribute không tồn tại trong hệ thống',
+            'chapter_id.integer' => ':attribute phải là số nguyên',
+            'chapter_id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'doKhoId.integer' => ':attribute phải là số nguyên',
-            'doKhoId.exists' => ':attribute không tồn tại trong hệ thống',
+            'difficulty_id.integer' => ':attribute phải là số nguyên',
+            'difficulty_id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'nguoiTaoId.integer' => ':attribute phải là số nguyên',
-            'nguoiTaoId.exists' => ':attribute không tồn tại trong hệ thống',
+            'creator_id.integer' => ':attribute phải là số nguyên',
+            'creator_id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'noiDungCauHoi.string' => ':attribute phải là chuỗi ký tự',
-            'imageUrl.string' => ':attribute phải là chuỗi ký tự',
-            'giaiThichDapAn.string' => ':attribute phải là chuỗi ký tự',
+            'question_content.string' => ':attribute phải là chuỗi ký tự',
+            'image_url.string' => ':attribute phải là chuỗi ký tự',
+            'answer_explanation.string' => ':attribute phải là chuỗi ký tự',
 
-            'diemMacDinh.numeric' => ':attribute phải là số',
-            'diemMacDinh.min' => ':attribute phải lớn hơn hoặc bằng 0',
+            'default_score.numeric' => ':attribute phải là số',
+            'default_score.min' => ':attribute phải lớn hơn hoặc bằng 0',
 
             'status.in' => ':attribute chỉ nhận một trong các giá trị: public, private, archive',
-            'isDeleted.boolean' => ':attribute phải là kiểu đúng/sai',
+            'is_deleted.boolean' => ':attribute phải là kiểu đúng/sai',
 
-            'cauTraLois.array' => ':attribute phải là mảng',
-            'cauTraLois.min' => ':attribute phải có ít nhất 2 lựa chọn',
+            'answerOptions.array' => ':attribute phải là mảng',
+            'answerOptions.min' => ':attribute phải có ít nhất 2 lựa chọn',
 
-            'cauTraLois.*.id.integer' => ':attribute phải là số nguyên',
-            'cauTraLois.*.id.exists' => ':attribute không tồn tại trong hệ thống',
+            'answerOptions.*.id.integer' => ':attribute phải là số nguyên',
+            'answerOptions.*.id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'cauTraLois.*.noiDungLuaChon.required_with' => ':attribute không được để trống khi cập nhật danh sách câu trả lời',
-            'cauTraLois.*.noiDungLuaChon.string' => ':attribute phải là chuỗi ký tự',
-            'cauTraLois.*.noiDungLuaChon.max' => ':attribute không được vượt quá 1000 ký tự',
+            'answerOptions.*.option_content.required_with' => ':attribute không được để trống khi cập nhật danh sách câu trả lời',
+            'answerOptions.*.option_content.string' => ':attribute phải là chuỗi ký tự',
 
-            'cauTraLois.*.isCorrectAnswer.required_with' => ':attribute không được để trống khi cập nhật danh sách câu trả lời',
-            'cauTraLois.*.isCorrectAnswer.boolean' => ':attribute phải là kiểu đúng/sai',
+            'answerOptions.*.is_correct_answer.required_with' => ':attribute không được để trống khi cập nhật danh sách câu trả lời',
+            'answerOptions.*.is_correct_answer.boolean' => ':attribute phải là kiểu đúng/sai',
         ];
     }
 
     public function attributes()
     {
         return [
-            'monHocId' => 'Mã môn học',
-            'chuongId' => 'Mã chương',
-            'doKhoId' => 'Mã độ khó',
-            'nguoiTaoId' => 'Mã người tạo',
-            'noiDungCauHoi' => 'Nội dung câu hỏi',
-            'imageUrl' => 'Đường dẫn ảnh',
-            'giaiThichDapAn' => 'Giải thích đáp án',
-            'diemMacDinh' => 'Điểm mặc định',
+            'subject_id' => 'Mã môn học',
+            'chapter_id' => 'Mã chương',
+            'difficulty_id' => 'Mã độ khó',
+            'creator_id' => 'Mã người tạo',
+            'question_content' => 'Nội dung câu hỏi',
+            'image_url' => 'Đường dẫn ảnh',
+            'answer_explanation' => 'Giải thích đáp án',
+            'default_score' => 'Điểm mặc định',
             'status' => 'Trạng thái',
-            'isDeleted' => 'Trạng thái xóa',
-            'cauTraLois' => 'Danh sách câu trả lời',
-            'cauTraLois.*.id' => 'Mã câu trả lời',
-            'cauTraLois.*.noiDungLuaChon' => 'Nội dung lựa chọn',
-            'cauTraLois.*.isCorrectAnswer' => 'Trạng thái đáp án đúng',
+            'is_deleted' => 'Trạng thái xóa',
+            'answerOptions' => 'Danh sách câu trả lời',
+            'answerOptions.*.id' => 'Mã câu trả lời',
+            'answerOptions.*.option_content' => 'Nội dung lựa chọn',
+            'answerOptions.*.is_correct_answer' => 'Trạng thái đáp án đúng',
         ];
     }
 }

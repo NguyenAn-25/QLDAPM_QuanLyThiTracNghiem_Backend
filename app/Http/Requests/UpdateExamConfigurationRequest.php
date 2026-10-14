@@ -24,71 +24,75 @@ class UpdateExamConfigurationRequest extends FormRequest
      */
     public function rules()
     {
-        $routeValue = $this->route('cauHinhThi') ?? $this->route('id') ?? $this->route('cauHinhId');
-        $cauHinhId = is_object($routeValue) ? $routeValue->cauHinhId : $routeValue;
+        $routeValue = $this->route('examConfiguration');
+        $examConfigurationId = is_object($routeValue) ? $routeValue->getKey() : $routeValue;
 
         return [
-            'deThiId' => [
-                'required',
+            'exam_id' => [
+                'sometimes',
                 'integer',
-                'exists:de_this,id',
-                Rule::unique('cau_hinh_this', 'deThiId')->ignore($cauHinhId, 'cauHinhId'),
+                'exists:exams,id',
+                Rule::unique('exam_configurations', 'exam_id')->ignore($examConfigurationId),
             ],
-            'hasMonitoring' => ['nullable', 'boolean'],
-            'allowCopy' => ['nullable', 'boolean'],
-            'allowPrint' => ['nullable', 'boolean'],
-            'isEnableResume' => ['nullable', 'boolean'],
-            'shuffleQuestions' => ['nullable', 'boolean'],
-            'shuffleAnswers' => ['nullable', 'boolean'],
-            'showScore' => ['nullable', 'boolean'],
-            'showDetailResults' => ['nullable', 'boolean'],
-            'isLimitSwitchTab' => ['nullable', 'boolean'],
-            'tabSwitchLimit' => ['nullable', 'integer', 'min:0'],
-            'messageOnWarning' => ['nullable', 'string', 'max:255'],
+            'has_monitoring' => ['sometimes', 'nullable', 'boolean'],
+            'limit_questions_per_page' => ['sometimes', 'nullable', 'integer'],
+            'allow_back_last_question' => ['sometimes', 'nullable', 'boolean'],
+            'allow_copy' => ['sometimes', 'nullable', 'boolean'],
+            'allow_print' => ['sometimes', 'nullable', 'boolean'],
+            'is_enable_resume' => ['sometimes', 'nullable', 'boolean'],
+            'shuffle_questions' => ['sometimes', 'nullable', 'boolean'],
+            'shuffle_answers' => ['sometimes', 'nullable', 'boolean'],
+            'show_score' => ['sometimes', 'nullable', 'boolean'],
+            'show_detail_results' => ['sometimes', 'nullable', 'boolean'],
+            'is_limit_switch_tab' => ['sometimes', 'nullable', 'boolean'],
+            'tab_switch_limit' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'message_on_warning' => ['sometimes', 'nullable', 'string'],
         ];
     }
 
     public function messages()
     {
         return [
-            'deThiId.required' => ':attribute không được để trống',
-            'deThiId.integer' => ':attribute phải là số nguyên',
-            'deThiId.exists' => ':attribute không tồn tại trong hệ thống',
-            'deThiId.unique' => ':attribute đã được cấu hình cho đề thi khác',
+            'exam_id.integer' => ':attribute phải là số nguyên',
+            'exam_id.exists' => ':attribute không tồn tại trong hệ thống',
+            'exam_id.unique' => ':attribute đã được cấu hình cho đề thi khác',
 
-            'hasMonitoring.boolean' => ':attribute phải là kiểu đúng/sai',
-            'allowCopy.boolean' => ':attribute phải là kiểu đúng/sai',
-            'allowPrint.boolean' => ':attribute phải là kiểu đúng/sai',
-            'isEnableResume.boolean' => ':attribute phải là kiểu đúng/sai',
-            'shuffleQuestions.boolean' => ':attribute phải là kiểu đúng/sai',
-            'shuffleAnswers.boolean' => ':attribute phải là kiểu đúng/sai',
-            'showScore.boolean' => ':attribute phải là kiểu đúng/sai',
-            'showDetailResults.boolean' => ':attribute phải là kiểu đúng/sai',
-            'isLimitSwitchTab.boolean' => ':attribute phải là kiểu đúng/sai',
+            'has_monitoring.boolean' => ':attribute phải là kiểu đúng/sai',
+            'limit_questions_per_page.integer' => ':attribute phải là số nguyên',
+            'allow_back_last_question.boolean' => ':attribute phải là kiểu đúng/sai',
+            'allow_copy.boolean' => ':attribute phải là kiểu đúng/sai',
+            'allow_print.boolean' => ':attribute phải là kiểu đúng/sai',
+            'is_enable_resume.boolean' => ':attribute phải là kiểu đúng/sai',
+            'shuffle_questions.boolean' => ':attribute phải là kiểu đúng/sai',
+            'shuffle_answers.boolean' => ':attribute phải là kiểu đúng/sai',
+            'show_score.boolean' => ':attribute phải là kiểu đúng/sai',
+            'show_detail_results.boolean' => ':attribute phải là kiểu đúng/sai',
+            'is_limit_switch_tab.boolean' => ':attribute phải là kiểu đúng/sai',
 
-            'tabSwitchLimit.integer' => ':attribute phải là số nguyên',
-            'tabSwitchLimit.min' => ':attribute phải lớn hơn hoặc bằng 0',
+            'tab_switch_limit.integer' => ':attribute phải là số nguyên',
+            'tab_switch_limit.min' => ':attribute phải lớn hơn hoặc bằng 0',
 
-            'messageOnWarning.string' => ':attribute phải là chuỗi ký tự',
-            'messageOnWarning.max' => ':attribute không được vượt quá 255 ký tự',
+            'message_on_warning.string' => ':attribute phải là chuỗi ký tự',
         ];
     }
 
     public function attributes()
     {
         return [
-            'deThiId' => 'Mã đề thi',
-            'hasMonitoring' => 'Giám sát thi',
-            'allowCopy' => 'Cho phép sao chép',
-            'allowPrint' => 'Cho phép in',
-            'isEnableResume' => 'Cho phép tiếp tục bài thi',
-            'shuffleQuestions' => 'Trộn câu hỏi',
-            'shuffleAnswers' => 'Trộn đáp án',
-            'showScore' => 'Hiển thị điểm',
-            'showDetailResults' => 'Hiển thị chi tiết kết quả',
-            'isLimitSwitchTab' => 'Giới hạn chuyển tab',
-            'tabSwitchLimit' => 'Số lần chuyển tab tối đa',
-            'messageOnWarning' => 'Thông báo cảnh báo',
+            'exam_id' => 'Mã đề thi',
+            'has_monitoring' => 'Giám sát thi',
+            'limit_questions_per_page' => 'Số câu hỏi mỗi trang',
+            'allow_back_last_question' => 'Cho phép quay lại câu trước',
+            'allow_copy' => 'Cho phép sao chép',
+            'allow_print' => 'Cho phép in',
+            'is_enable_resume' => 'Cho phép tiếp tục bài thi',
+            'shuffle_questions' => 'Trộn câu hỏi',
+            'shuffle_answers' => 'Trộn đáp án',
+            'show_score' => 'Hiển thị điểm',
+            'show_detail_results' => 'Hiển thị chi tiết kết quả',
+            'is_limit_switch_tab' => 'Giới hạn chuyển tab',
+            'tab_switch_limit' => 'Số lần chuyển tab tối đa',
+            'message_on_warning' => 'Thông báo cảnh báo',
         ];
     }
 }

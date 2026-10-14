@@ -26,17 +26,40 @@ class SubmitTestRequest extends FormRequest
         return [
             'answers' => ['required', 'array'],
 
-            'answers.*.cauHoiId' => [
+            'answers.*.question_id' => [
                 'required',
                 'integer',
-                'exists:cau_hois,id'
+                'exists:questions,id',
             ],
 
-            'answers.*.dapAnId' => [
+            'answers.*.answer_id' => [
                 'required',
                 'integer',
-                'exists:cau_tra_lois,id'
+                'exists:answer_options,id',
             ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'answers.required' => 'Danh sách câu trả lời không được để trống.',
+            'answers.array' => 'Danh sách câu trả lời phải là một mảng.',
+            'answers.*.question_id.required' => 'Mã câu hỏi không được để trống.',
+            'answers.*.question_id.integer' => 'Mã câu hỏi phải là số nguyên.',
+            'answers.*.question_id.exists' => 'Câu hỏi không tồn tại.',
+            'answers.*.answer_id.required' => 'Mã đáp án không được để trống.',
+            'answers.*.answer_id.integer' => 'Mã đáp án phải là số nguyên.',
+            'answers.*.answer_id.exists' => 'Đáp án không tồn tại.',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'answers' => 'Danh sách câu trả lời',
+            'answers.*.question_id' => 'Mã câu hỏi',
+            'answers.*.answer_id' => 'Mã đáp án',
         ];
     }
 }

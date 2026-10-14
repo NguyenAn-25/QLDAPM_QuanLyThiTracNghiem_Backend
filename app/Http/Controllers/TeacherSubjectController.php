@@ -32,8 +32,8 @@ class TeacherSubjectController extends Controller
         return $this->success($data, 201);
     }
 
-    public function destroy(int $giangvienid, int $monhocid){
-        $data = $this->teacherSubjectService->delete($giangvienid, $monhocid);
+    public function destroy(int $teacherId, int $subjectId){
+        $data = $this->teacherSubjectService->delete($teacherId, $subjectId);
         return $this->success($data);
     }
 

@@ -25,16 +25,16 @@ class ChangePassWordRequest extends FormRequest
     public function rules()
     {
         return [
-            'currentPassword' => ['required', 'string'],
+            'current_password' => ['required', 'string'],
 
-            'newPassword' => [
+            'new_password' => [
                 'required',
                 Password::min(6)
                     ->letters()
                     ->numbers()
                     ->mixedCase(),
                 'different:current_password',
-                'confirmed'
+                'confirmed',
             ],
         ];
     }
@@ -42,16 +42,25 @@ class ChangePassWordRequest extends FormRequest
     public function messages()
     {
         return [
-            'currentPassword.required' => 'Vui lòng nhập mật khẩu hiện tại.',
-            'currentPassword.string'   => 'Mật khẩu hiện tại không hợp lệ.',
+            'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+            'current_password.string' => 'Mật khẩu hiện tại không hợp lệ.',
 
-            'newPassword.required' => 'Vui lòng nhập mật khẩu mới.',
-            'newPassword.min'      => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
-            'newPassword.letters'  => 'Mật khẩu mới phải chứa ít nhất một chữ cái.',
-            'newPassword.numbers'  => 'Mật khẩu mới phải chứa ít nhất một số.',
-            'newPassword.mixedCase' => 'Mật khẩu mới phải có cả chữ hoa và chữ thường.',
-            'newPassword.different' => 'Mật khẩu mới phải khác mật khẩu hiện tại.',
-            'newPassword.confirmed' => 'Xác nhận mật khẩu không khớp.',
+            'new_password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'new_password.letters' => 'Mật khẩu mới phải chứa ít nhất một chữ cái.',
+            'new_password.numbers' => 'Mật khẩu mới phải chứa ít nhất một số.',
+            'new_password.mixedCase' => 'Mật khẩu mới phải có cả chữ hoa và chữ thường.',
+            'new_password.different' => 'Mật khẩu mới phải khác mật khẩu hiện tại.',
+            'new_password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'current_password' => 'Mật khẩu hiện tại',
+            'new_password' => 'Mật khẩu mới',
+            'new_password_confirmation' => 'Xác nhận mật khẩu mới',
         ];
     }
 }

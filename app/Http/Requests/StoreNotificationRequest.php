@@ -24,29 +24,61 @@ class StoreNotificationRequest extends FormRequest
     public function rules()
     {
         return [
-            'tieuDe' => 'required|string|max:200',
-            'noiDung' => 'required|string',
+            'title' => ['required', 'string', 'max:200'],
+            'content' => ['required', 'string'],
 
-            'nguoiGuiId' => 'nullable|integer|exists:users,id',
+            'sender_id' => ['required', 'integer', 'exists:users,id'],
 
-            'thoiGianGui' => 'nullable|date',
+            'sent_at' => ['sometimes', 'nullable', 'date'],
 
-            'uuTien' => ['nullable', 'integer'],
+            'priority' => ['sometimes', 'nullable', 'integer'],
 
-            'status' => 'nullable|boolean',
+            'status' => ['sometimes', 'nullable', 'boolean'],
 
-            'nhomHocPhanIds' => 'required|array|min:1',
-            'nhomHocPhanIds.*' => 'integer|exists:nhom_hoc_phans,id',
+            'course_group_ids' => ['required', 'array', 'min:1'],
+            'course_group_ids.*' => ['integer', 'exists:course_groups,id'],
         ];
     }
 
     public function messages()
     {
         return [
-            'tieuDe.required' => 'Tiêu đề không được để trống',
-            'noiDung.required' => 'Nội dung không được để trống',
+            'title.required' => ':attribute không được để trống',
+            'title.string' => ':attribute phải là chuỗi ký tự',
+            'title.max' => ':attribute không được vượt quá 200 ký tự',
 
-            'nguoiGuiId.exists' => 'Người gửi không tồn tại',
+            'content.required' => ':attribute không được để trống',
+            'content.string' => ':attribute phải là chuỗi ký tự',
+
+            'sender_id.required' => ':attribute không được để trống',
+            'sender_id.integer' => ':attribute phải là số nguyên',
+            'sender_id.exists' => ':attribute không tồn tại trong hệ thống',
+
+            'sent_at.date' => ':attribute không đúng định dạng ngày giờ',
+
+            'priority.integer' => ':attribute phải là số nguyên',
+
+            'status.boolean' => ':attribute phải là kiểu đúng/sai',
+
+            'course_group_ids.required' => ':attribute không được để trống',
+            'course_group_ids.array' => ':attribute phải là mảng',
+            'course_group_ids.min' => ':attribute phải có ít nhất 1 phần tử',
+            'course_group_ids.*.integer' => ':attribute phải là số nguyên',
+            'course_group_ids.*.exists' => ':attribute không tồn tại trong hệ thống',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'title' => 'Tiêu đề',
+            'content' => 'Nội dung',
+            'sender_id' => 'Mã người gửi',
+            'sent_at' => 'Thời gian gửi',
+            'priority' => 'Mức độ ưu tiên',
+            'status' => 'Trạng thái',
+            'course_group_ids' => 'Danh sách nhóm học phần',
+            'course_group_ids.*' => 'Mã nhóm học phần',
         ];
     }
 }

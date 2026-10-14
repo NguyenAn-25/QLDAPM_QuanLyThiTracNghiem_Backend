@@ -24,23 +24,28 @@ class UpdateChapterRequest extends FormRequest
     public function rules()
     {
         return [
-            // Kiểm tra chuongs phải là một mảng
-            'chuongs' => ['required', 'array'],
-            // Validate từng item bên trong mảng chuongs
-            'chuongs.*.tenChuong' => ['required', 'string', 'max:100'],
+            'chapters' => ['required', 'array'],
+            'chapters.*.chapter_name' => ['required', 'string', 'max:100'],
         ];
     }
-    public function messages()
-{
-    return [
-        // Messages cho mảng chuongs
-        'chuongs.required' => 'Danh sách chương không được để trống.',
-        'chuongs.array'    => 'Danh sách chương phải là một mảng hợp lệ.',
 
-        // Messages cho từng phần tử trong mảng
-        'chuongs.*.tenChuong.required' => 'Tên chương không được để trống.',
-        'chuongs.*.tenChuong.string'   => 'Tên chương phải là chuỗi ký tự.',
-        'chuongs.*.tenChuong.max'      => 'Tên chương không được vượt quá 100 ký tự.',
-    ];
-}
+    public function messages()
+    {
+        return [
+            'chapters.required' => 'Danh sách chương không được để trống.',
+            'chapters.array' => 'Danh sách chương phải là một mảng hợp lệ.',
+
+            'chapters.*.chapter_name.required' => 'Tên chương không được để trống.',
+            'chapters.*.chapter_name.string' => 'Tên chương phải là chuỗi ký tự.',
+            'chapters.*.chapter_name.max' => 'Tên chương không được vượt quá 100 ký tự.',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'chapters' => 'Danh sách chương',
+            'chapters.*.chapter_name' => 'Tên chương',
+        ];
+    }
 }

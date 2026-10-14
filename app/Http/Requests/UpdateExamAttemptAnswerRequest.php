@@ -24,11 +24,11 @@ class UpdateExamAttemptAnswerRequest extends FormRequest
     public function rules()
     {
         return [
-            "dapAnId" => [
-                "required",
-                "nullable",
-                "integer",
-                "exists:cau_tra_lois,id"
+            'answer_option_id' => [
+                'required',
+                'nullable',
+                'integer',
+                'exists:answer_options,id'
             ],
         ];
     }

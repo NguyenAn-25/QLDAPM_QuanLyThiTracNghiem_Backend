@@ -25,20 +25,20 @@ class UpdateExamAttemptRequest extends FormRequest
     public function rules()
     {
         return [
-            "thoiGianBatDau" => [
+            "start_time" => [
                 "sometimes",
                 "date"
             ],
 
-            "thoiGianNopBai" => [
+            "submission_time" => [
                 "nullable",
                 "date",
-                "after_or_equal:thoiGianBatDau"
+                "after_or_equal:start_time"
             ],
 
             "status" => [
                 "sometimes",
-                Rule::in(["DANG_LAM", "TAM_LUU", "DA_NOP", "BI_HUY"])
+                Rule::in(["IN_PROGRESS", "SAVED", "SUBMITTED", "CANCELLED"])
             ],
         ];
     }

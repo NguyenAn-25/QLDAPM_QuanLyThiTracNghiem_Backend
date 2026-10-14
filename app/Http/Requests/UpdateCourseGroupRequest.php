@@ -25,70 +25,69 @@ class UpdateCourseGroupRequest extends FormRequest
     public function rules()
     {
         return [
-            'monHocId' => ['sometimes', 'integer', 'exists:mon_hocs,id'],
-            'tenNhom' => ['sometimes', 'string', 'max:100'],
-            'maMoi' => [
+            'subject_id' => ['sometimes', 'integer', 'exists:subjects,id'],
+            'group_name' => ['sometimes', 'string', 'max:100'],
+            'join_code' => [
                 'sometimes',
                 'string',
                 'max:20',
-                Rule::unique('nhom_hoc_phans', 'maMoi')->ignore($this->route('nhom_hoc_phan'))
+                Rule::unique('course_groups', 'join_code')->ignore($this->route('courseGroup'))
             ],
-            // 'siSo' => ['sometimes', 'integer', 'min:1'],
-            'notes' => ['sometimes', 'string'],
-            'hocKy' => ['sometimes', 'integer', 'min:1', 'max:3'],
-            'namHoc' => ['sometimes', 'integer', 'min:2000'],
-            'giangVienId' => ['sometimes', 'integer', 'exists:users,id'],
-            'isHide' => ['sometimes', 'boolean'],
-            'isDeleted' => ['sometimes', 'boolean'],
+            'notes' => ['sometimes', 'nullable', 'string'],
+            'semester' => ['sometimes', 'integer', 'min:1', 'max:3'],
+            'academic_year' => ['sometimes', 'integer', 'min:2000'],
+            'background_url' => ['sometimes', 'nullable', 'string'],
+            'teacher_id' => ['sometimes', 'integer', 'exists:users,id'],
+            'is_hidden' => ['sometimes', 'boolean'],
+            'is_deleted' => ['sometimes', 'boolean'],
         ];
     }
 
     public function messages()
     {
         return [
-            'monHocId.integer' => ':attribute phải là số nguyên',
-            'monHocId.exists' => ':attribute không tồn tại trong hệ thống',
+            'subject_id.integer' => ':attribute phải là số nguyên',
+            'subject_id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'tenNhom.string' => ':attribute phải là chuỗi ký tự',
-            'tenNhom.max' => ':attribute không được vượt quá 100 ký tự',
+            'group_name.string' => ':attribute phải là chuỗi ký tự',
+            'group_name.max' => ':attribute không được vượt quá 100 ký tự',
 
-            'maMoi.string' => ':attribute phải là chuỗi ký tự',
-            'maMoi.max' => ':attribute không được vượt quá 20 ký tự',
-            'maMoi.unique' => ':attribute đã tồn tại',
-
-            'siSo.integer' => ':attribute phải là số nguyên',
-            'siSo.min' => ':attribute phải lớn hơn hoặc bằng 1',
+            'join_code.string' => ':attribute phải là chuỗi ký tự',
+            'join_code.max' => ':attribute không được vượt quá 20 ký tự',
+            'join_code.unique' => ':attribute đã tồn tại',
 
             'notes.string' => ':attribute phải là chuỗi ký tự',
 
-            'hocKy.integer' => ':attribute phải là số nguyên',
-            'hocKy.min' => ':attribute phải từ 1 đến 3',
-            'hocKy.max' => ':attribute phải từ 1 đến 3',
+            'semester.integer' => ':attribute phải là số nguyên',
+            'semester.min' => ':attribute phải từ 1 đến 3',
+            'semester.max' => ':attribute phải từ 1 đến 3',
 
-            'namHoc.integer' => ':attribute phải là số nguyên',
-            'namHoc.min' => ':attribute phải từ năm 2000 trở lên',
+            'academic_year.integer' => ':attribute phải là số nguyên',
+            'academic_year.min' => ':attribute phải từ năm 2000 trở lên',
 
-            'giangVienId.integer' => ':attribute phải là số nguyên',
-            'giangVienId.exists' => ':attribute không tồn tại trong hệ thống',
+            'background_url.string' => ':attribute phải là chuỗi ký tự',
 
-            'isHide.boolean' => ':attribute phải là kiểu đúng/sai',
-            'isDeleted.boolean' => ':attribute phải là kiểu đúng/sai',
+            'teacher_id.integer' => ':attribute phải là số nguyên',
+            'teacher_id.exists' => ':attribute không tồn tại trong hệ thống',
+
+            'is_hidden.boolean' => ':attribute phải là kiểu đúng/sai',
+            'is_deleted.boolean' => ':attribute phải là kiểu đúng/sai',
         ];
     }
 
     public function attributes()
     {
         return [
-            'monHocId' => 'Mã môn học',
-            'tenNhom' => 'Tên nhóm',
-            'maMoi' => 'Mã mời',
-            'siSo' => 'Sỉ số',
+            'subject_id' => 'Mã môn học',
+            'group_name' => 'Tên nhóm',
+            'join_code' => 'Mã mời',
             'notes' => 'Ghi chú',
-            'hocKy' => 'Học kỳ',
-            'namHoc' => 'Năm học',
-            'giangVienId' => 'Mã giảng viên',
-            'isHide' => 'Trạng thái ẩn',
-            'isDeleted' => 'Trạng thái xóa',
+            'semester' => 'Học kỳ',
+            'academic_year' => 'Năm học',
+            'background_url' => 'URL ảnh nền',
+            'teacher_id' => 'Mã giảng viên',
+            'is_hidden' => 'Trạng thái ẩn',
+            'is_deleted' => 'Trạng thái xóa',
         ];
     }
 }

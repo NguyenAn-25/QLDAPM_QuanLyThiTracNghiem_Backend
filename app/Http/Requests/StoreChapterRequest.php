@@ -24,31 +24,31 @@ class StoreChapterRequest extends FormRequest
     public function rules()
     {
         return [
-            'tenChuong' => ['required', 'string', 'max:100'],
-            'monHocId'  => ['required', 'integer', 'exists:mon_hocs,id'],
-            'isDeleted' => ['nullable', 'boolean'],
+            'chapter_name' => ['required', 'string', 'max:100'],
+            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
+            'is_deleted' => ['nullable', 'boolean'],
         ];
     }
 
     public function messages()
     {
         return [
-            'tenChuong.required' => ':attribute là bắt buộc',
-            'tenChuong.string'   => ':attribute phải là chuỗi ký tự',
-            'tenChuong.max'      => ':attribute không được vượt quá 100 ký tự',
-            'monHocId.required'  => ':attribute là bắt buộc',
-            'monHocId.integer'   => ':attribute phải là số nguyên',
-            'monHocId.exists'    => ':attribute không tồn tại trong hệ thống',
-            'isDeleted.boolean'  => ':attribute phải là kiểu đúng/sai',
+            'chapter_name.required' => ':attribute là bắt buộc',
+            'chapter_name.string' => ':attribute phải là chuỗi ký tự',
+            'chapter_name.max' => ':attribute không được vượt quá 100 ký tự',
+            'subject_id.required' => ':attribute là bắt buộc',
+            'subject_id.integer' => ':attribute phải là số nguyên',
+            'subject_id.exists' => ':attribute không tồn tại trong hệ thống',
+            'is_deleted.boolean' => ':attribute phải là kiểu đúng/sai',
         ];
     }
 
     public function attributes()
     {
         return [
-            'tenChuong' => 'Tên chương',
-            'monHocId'  => 'Mã môn học',
-            'isDeleted' => 'Trạng thái xóa',
+            'chapter_name' => 'Tên chương',
+            'subject_id' => 'Mã môn học',
+            'is_deleted' => 'Trạng thái xóa',
         ];
     }
 }

@@ -24,19 +24,19 @@ class UpdateNotificationRequest extends FormRequest
     public function rules()
     {
         return [
-            'tieuDe' => 'sometimes|string|max:200',
-            'noiDung' => 'sometimes|string',
+            'title' => 'sometimes|string|max:200',
+            'content' => 'sometimes|string',
 
-            'nguoiGuiId' => 'sometimes|nullable|integer|exists:users,id',
+            'sender_id' => 'sometimes|nullable|integer|exists:users,id',
 
-            'thoiGianGui' => 'sometimes|nullable|date',
+            'sent_at' => 'sometimes|nullable|date',
 
-            'uuTien' => ['sometimes', 'nullable', 'integer'],
+            'priority' => ['sometimes', 'nullable', 'integer'],
 
             'status' => 'sometimes|nullable|boolean',
 
-            'nhomHocPhanIds' => 'sometimes|array|min:1',
-            'nhomHocPhanIds.*' => 'integer|exists:nhom_hoc_phans,id',
+            'course_group_ids' => 'sometimes|array|min:1',
+            'course_group_ids.*' => 'integer|exists:course_groups,id',
         ];
     }
 }

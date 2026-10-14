@@ -27,7 +27,7 @@ class UpdateUserRequest extends FormRequest
         $userId = $this->route('user');
 
         return [
-            "hoTen" => ["sometimes", "string", "max:255"],
+            "full_name" => ["sometimes", "string", "max:255"],
 
             "email" => [
                 "sometimes",
@@ -36,18 +36,18 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->route('user')),
             ],
 
-            "nhomQuyenId" => ["sometimes", "numeric", "exists:roles,id", "nullable"],
-            "sdt" => ["sometimes", "numeric", "digits:10"],
+            "role_id" => ["sometimes", "numeric", "exists:roles,id", "nullable"],
+            "phone" => ["sometimes", "numeric", "digits:10"],
 
-            "ngaySinh" => ["sometimes", "date_format:Y-m-d", "before:today"],
+            "date_of_birth" => ["sometimes", "date_format:Y-m-d", "before:today"],
 
-            "laGioiTinhNu" => ["sometimes", "boolean"],
-            "isStudent" => ["required", "boolean"],
-            "isLocked" => ["required", "boolean"],
+            "is_female" => ["sometimes", "boolean"],
+            "is_student" => ["required", "boolean"],
+            "is_locked" => ["required", "boolean"],
 
             "ggid" => ["sometimes", "string"],
 
-            "urlAvatar" => ["sometimes", "string"]
+            "avatar_url" => ["sometimes", "string"]
         ];
     }
 }

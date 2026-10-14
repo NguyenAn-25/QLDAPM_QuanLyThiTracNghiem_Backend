@@ -26,16 +26,16 @@ class UpdateStudentTestRequest extends FormRequest
         return [
             'answers' => ['required', 'array'],
 
-            'answers.*.cauHoiId' => [
+            'answers.*.question_id' => [
                 'required',
                 'integer',
-                'exists:cau_hois,id'
+                'exists:questions,id'
             ],
 
-            'answers.*.dapAnId' => [
+            'answers.*.answer_id' => [
                 'required',
                 'integer',
-                'exists:cau_tra_lois,id'
+                'exists:answer_options,id'
             ],
         ];
     }

@@ -40,27 +40,27 @@ class NotificationController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Notification $thongbao)
+    public function show(Notification $notification)
     {
-        $data = $this->notificationService->getOne($thongbao);
+        $data = $this->notificationService->getOne($notification);
         return $this->success($data);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateNotificationRequest $request, Notification $thongbao)
+    public function update(UpdateNotificationRequest $request, Notification $notification)
     {
-        $data = $this->notificationService->update($request->validated(), $thongbao);
+        $data = $this->notificationService->update($request->validated(), $notification);
         return $this->success($data);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Notification $thongbao)
+    public function destroy(Notification $notification)
     {
-        $data = $this->notificationService->delete($thongbao);
+        $data = $this->notificationService->delete($notification);
         return $this->success($data);
     }
 }

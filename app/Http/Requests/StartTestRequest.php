@@ -24,17 +24,37 @@ class StartTestRequest extends FormRequest
     public function rules()
     {
         return [
-            "thiSinhId" => [
+            "student_id" => [
                 "required",
                 "integer",
                 "exists:users,id",
             ],
 
-            "deThiId" => [
+            "exam_id" => [
                 "required",
                 "integer",
-                "exists:de_this,id"
+                "exists:exams,id",
             ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'student_id.required' => 'Vui lòng chọn sinh viên.',
+            'student_id.integer' => 'Mã sinh viên không hợp lệ.',
+            'student_id.exists' => 'Sinh viên không tồn tại.',
+            'exam_id.required' => 'Vui lòng chọn đề thi.',
+            'exam_id.integer' => 'Mã đề thi không hợp lệ.',
+            'exam_id.exists' => 'Đề thi không tồn tại.',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'student_id' => 'Sinh viên',
+            'exam_id' => 'Đề thi',
         ];
     }
 }

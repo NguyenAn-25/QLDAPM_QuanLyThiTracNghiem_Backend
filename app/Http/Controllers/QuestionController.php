@@ -28,10 +28,10 @@ class QuestionController extends Controller
     public function index(Request $request)
     {
         $filters = [
-            'monHocId' => $request->query('monHocId'),
-            'chuongId' => $request->query('chuongId'),
-            'doKhoId' => $request->query('doKhoId'),
-            'nguoiTaoId' => $request->query('nguoiTaoId'),
+            'subject_id' => $request->query('monHocId'),
+            'chapter_id' => $request->query('chuongId'),
+            'difficulty_id' => $request->query('doKhoId'),
+            'creator_id' => $request->query('nguoiTaoId'),
             'status' => $request->query('status'),
             'keyword' => $request->query('keyword'),
             'bank' => $request->query('bank'),
@@ -53,43 +53,43 @@ class QuestionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Question $cauhoi)
+    public function show(Question $question)
     {
-        $cauHoi = $this->questionService->getOne($cauhoi);
+        $cauHoi = $this->questionService->getOne($question);
         return $this->success($cauHoi);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateQuestionRequest $request, Question $cauhoi)
+    public function update(UpdateQuestionRequest $request, Question $question)
     {
-        $data = $this->questionService->update($request->validated(), $cauhoi);
+        $data = $this->questionService->update($request->validated(), $question);
         return $this->success($data);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Question $cauhoi)
+    public function destroy(Question $question)
     {
-        $result = $this->questionService->delete($cauhoi);
+        $result = $this->questionService->delete($question);
         return $this->success($result);
     }
 
-    public function changeStatus(ChangeQuestionStatusRequest $request, Question $cauhoi)
+    public function changeStatus(ChangeQuestionStatusRequest $request, Question $question)
     {
-        $data = $this->questionService->changeStatus($cauhoi, $request->validated()['status']);
+        $data = $this->questionService->changeStatus($question, $request->validated()['status']);
         return $this->success($data);
     }
 
-    public function copyFromPublic(Request $request, Question $cauhoi)
+    public function copyFromPublic(Request $request, Question $question)
     {
         $validated = $request->validate([
             'nguoiTaoId' => ['required', 'integer', 'exists:users,id'],
         ]);
 
-        $data = $this->questionService->copyFromPublic($cauhoi, (int) $validated['nguoiTaoId']);
+        $data = $this->questionService->copyFromPublic($question, (int) $validated['nguoiTaoId']);
         return $this->success($data, 201);
     }
 
@@ -108,4 +108,3 @@ class QuestionController extends Controller
         return $this->success($data);
     }
 }
-

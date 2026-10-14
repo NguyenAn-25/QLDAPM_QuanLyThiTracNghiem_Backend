@@ -24,107 +24,124 @@ class UpdateExamRequest extends FormRequest
     public function rules()
     {
         return [
-            'monThiId' => ['sometimes', 'integer', 'exists:mon_hocs,id'],
-            'tenDe' => ['sometimes', 'string', 'max:255'],
+            'subject_id' => ['sometimes', 'integer', 'exists:subjects,id'],
+            'exam_name' => ['sometimes', 'string', 'max:255'],
 
-            'thoiGianBatDau' => ['sometimes', 'date'],
-            'thoiGianKetThuc' => ['sometimes', 'date', 'after:thoiGianBatDau'],
+            'start_time' => ['sometimes', 'date'],
+            'end_time' => ['sometimes', 'date', 'after:start_time'],
 
-            'thoiGianLamBai' => ['sometimes', 'integer', 'min:1'],
+            'duration_minutes' => ['sometimes', 'integer', 'min:1'],
+            'is_deleted' => ['sometimes', 'boolean'],
 
-            'nhomHocPhanIds' => ['sometimes', 'array'],
-            'nhomHocPhanIds.*' => ['integer', 'exists:nhom_hoc_phans,id'],
+            'course_group_ids' => ['sometimes', 'array'],
+            'course_group_ids.*' => ['integer', 'exists:course_groups,id'],
 
-            'cauHois' => ['sometimes', 'array'],
-            'cauHois.*.id' => ['required_with:cauHois', 'integer', 'exists:cau_hois,id'],
-            'cauHois.*.thuTu' => ['required_with:cauHois', 'integer'],
-            'cauHois.*.diem' => ['required_with:cauHois', 'numeric', 'min:0', 'max:10'],
+            'questions' => ['sometimes', 'array'],
+            'questions.*.id' => ['required_with:questions', 'integer', 'exists:questions,id'],
+            'questions.*.order' => ['required_with:questions', 'integer'],
+            'questions.*.score' => ['required_with:questions', 'numeric', 'min:0', 'max:10'],
 
-            'cauHinh' => ['sometimes', 'array'],
-            'cauHinh.hasMonitoring' => ['sometimes', 'boolean'],
-            'cauHinh.allowCopy' => ['sometimes', 'boolean'],
-            'cauHinh.allowPrint' => ['sometimes', 'boolean'],
-            'cauHinh.isEnableResume' => ['sometimes', 'boolean'],
-            'cauHinh.shuffleQuestions' => ['sometimes', 'boolean'],
-            'cauHinh.shuffleAnswers' => ['sometimes', 'boolean'],
-            'cauHinh.showScore' => ['sometimes', 'boolean'],
-            'cauHinh.showDetailResults' => ['sometimes', 'boolean'],
-            'cauHinh.isLimitSwitchTab' => ['sometimes', 'boolean'],
-            'cauHinh.tabSwitchLimit' => ['sometimes', 'integer'],
-            'cauHinh.messageOnWarning' => ['sometimes', 'string'],
-            'cauHinh.limitQuestionPerPage' => ['sometimes', 'integer'],
-            'cauHinh.allowBackLastQuestion' => ['sometimes', 'boolean'],
+            'configuration' => ['sometimes', 'array'],
+            'configuration.has_monitoring' => ['sometimes', 'boolean'],
+            'configuration.allow_copy' => ['sometimes', 'boolean'],
+            'configuration.allow_print' => ['sometimes', 'boolean'],
+            'configuration.is_enable_resume' => ['sometimes', 'boolean'],
+            'configuration.shuffle_questions' => ['sometimes', 'boolean'],
+            'configuration.shuffle_answers' => ['sometimes', 'boolean'],
+            'configuration.show_score' => ['sometimes', 'boolean'],
+            'configuration.show_detail_results' => ['sometimes', 'boolean'],
+            'configuration.is_limit_switch_tab' => ['sometimes', 'boolean'],
+            'configuration.tab_switch_limit' => ['sometimes', 'integer', 'min:0'],
+            'configuration.message_on_warning' => ['sometimes', 'nullable', 'string'],
+            'configuration.limit_questions_per_page' => ['sometimes', 'integer'],
+            'configuration.allow_back_last_question' => ['sometimes', 'boolean'],
         ];
     }
 
     public function messages()
     {
         return [
-            // monThiId
-            'monThiId.integer' => 'Môn thi phải là số.',
-            'monThiId.exists' => 'Môn thi không tồn tại.',
+            'subject_id.integer' => ':attribute phải là số nguyên',
+            'subject_id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            // tenDe
-            'tenDe.string' => 'Tên đề phải là chuỗi.',
-            'tenDe.max' => 'Tên đề không được vượt quá 255 ký tự.',
+            'exam_name.string' => ':attribute phải là chuỗi ký tự',
+            'exam_name.max' => ':attribute không được vượt quá 255 ký tự',
 
-            // thời gian
-            'thoiGianBatDau.date' => 'Thời gian bắt đầu không hợp lệ.',
-            'thoiGianKetThuc.date' => 'Thời gian kết thúc không hợp lệ.',
-            'thoiGianKetThuc.after' => 'Thời gian kết thúc phải sau thời gian bắt đầu.',
+            'start_time.date' => ':attribute không đúng định dạng ngày giờ',
+            'end_time.date' => ':attribute không đúng định dạng ngày giờ',
+            'end_time.after' => ':attribute phải sau thời gian bắt đầu',
 
-            // thời gian làm bài
-            'thoiGianLamBai.integer' => 'Thời gian làm bài phải là số.',
-            'thoiGianLamBai.min' => 'Thời gian làm bài phải lớn hơn 0.',
+            'duration_minutes.integer' => ':attribute phải là số nguyên',
+            'duration_minutes.min' => ':attribute phải lớn hơn hoặc bằng 1',
+            'is_deleted.boolean' => ':attribute phải là kiểu đúng/sai',
 
-            // nhóm học phần
-            'nhomHocPhanIds.array' => 'Danh sách nhóm học phần không hợp lệ.',
-            'nhomHocPhanIds.*.integer' => 'ID nhóm học phần phải là số.',
-            'nhomHocPhanIds.*.exists' => 'Nhóm học phần không tồn tại.',
+            'course_group_ids.array' => ':attribute phải là mảng',
+            'course_group_ids.*.integer' => ':attribute phải là số nguyên',
+            'course_group_ids.*.exists' => ':attribute không tồn tại trong hệ thống',
 
-            // câu hỏi
-            'cauHois.array' => 'Danh sách câu hỏi không hợp lệ.',
+            'questions.array' => ':attribute phải là mảng',
 
-            'cauHois.*.id.required_with' => 'ID câu hỏi là bắt buộc.',
-            'cauHois.*.id.integer' => 'ID câu hỏi phải là số.',
-            'cauHois.*.id.exists' => 'Câu hỏi không tồn tại.',
+            'questions.*.id.required_with' => ':attribute không được để trống',
+            'questions.*.id.integer' => ':attribute phải là số nguyên',
+            'questions.*.id.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'cauHois.*.thuTu.required_with' => 'Thứ tự câu hỏi là bắt buộc.',
-            'cauHois.*.thuTu.integer' => 'Thứ tự phải là số.',
+            'questions.*.order.required_with' => ':attribute không được để trống',
+            'questions.*.order.integer' => ':attribute phải là số nguyên',
 
-            'cauHois.*.diem.required_with' => 'Điểm câu hỏi là bắt buộc.',
-            'cauHois.*.diem.numeric' => 'Điểm phải là số.',
-            'cauHois.*.diem.min' => 'Điểm phải lớn hơn hoặc bằng 0.',
-            'cauHois.*.diem.max' => 'Điểm không được vượt quá 10.',
+            'questions.*.score.required_with' => ':attribute không được để trống',
+            'questions.*.score.numeric' => ':attribute phải là số',
+            'questions.*.score.min' => ':attribute phải lớn hơn hoặc bằng 0',
+            'questions.*.score.max' => ':attribute không được vượt quá 10',
 
-            // cấu hình
-            'cauHinh.array' => 'Cấu hình không hợp lệ.',
+            'configuration.array' => ':attribute phải là mảng',
 
-            'cauHinh.hasMonitoring.boolean' => 'Giám sát phải là true/false.',
-            'cauHinh.allowCopy.boolean' => 'Cho phép copy phải là true/false.',
-            'cauHinh.allowPrint.boolean' => 'Cho phép in phải là true/false.',
-            'cauHinh.isEnableResume.boolean' => 'Cho phép tiếp tục bài phải là true/false.',
-            'cauHinh.shuffleQuestions.boolean' => 'Trộn câu hỏi phải là true/false.',
-            'cauHinh.shuffleAnswers.boolean' => 'Trộn đáp án phải là true/false.',
-            'cauHinh.showScore.boolean' => 'Hiển thị điểm phải là true/false.',
-            'cauHinh.showDetailResults.boolean' => 'Hiển thị chi tiết kết quả phải là true/false.',
-            'cauHinh.isLimitSwitchTab.boolean' => 'Giới hạn chuyển tab phải là true/false.',
+            'configuration.has_monitoring.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.allow_copy.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.allow_print.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.is_enable_resume.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.shuffle_questions.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.shuffle_answers.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.show_score.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.show_detail_results.boolean' => ':attribute phải là kiểu đúng/sai',
+            'configuration.is_limit_switch_tab.boolean' => ':attribute phải là kiểu đúng/sai',
 
-            'cauHinh.tabSwitchLimit.integer' => 'Số lần chuyển tab phải là số.',
-            'cauHinh.messageOnWarning.string' => 'Thông báo cảnh báo phải là chuỗi.',
+            'configuration.tab_switch_limit.integer' => ':attribute phải là số nguyên',
+            'configuration.tab_switch_limit.min' => ':attribute phải lớn hơn hoặc bằng 0',
+            'configuration.message_on_warning.string' => ':attribute phải là chuỗi ký tự',
+            'configuration.limit_questions_per_page.integer' => ':attribute phải là số nguyên',
+            'configuration.allow_back_last_question.boolean' => ':attribute phải là kiểu đúng/sai',
         ];
     }
 
     public function attributes()
     {
         return [
-            'monThiId' => 'Mã môn thi',
-            'nguoiTaoId' => 'Mã người tạo',
-            'tenDe' => 'Tên đề',
-            'thoiGianBatDau' => 'Thời gian bắt đầu',
-            'thoiGianKetThuc' => 'Thời gian kết thúc',
-            'thoiGianLamBai' => 'Thời gian làm bài',
-            'isDeleted' => 'Trạng thái xóa',
+            'subject_id' => 'Mã môn thi',
+            'exam_name' => 'Tên đề',
+            'start_time' => 'Thời gian bắt đầu',
+            'end_time' => 'Thời gian kết thúc',
+            'duration_minutes' => 'Thời gian làm bài',
+            'is_deleted' => 'Trạng thái xóa',
+            'course_group_ids' => 'Danh sách nhóm học phần',
+            'course_group_ids.*' => 'Mã nhóm học phần',
+            'questions' => 'Danh sách câu hỏi',
+            'questions.*.id' => 'Mã câu hỏi',
+            'questions.*.order' => 'Thứ tự câu hỏi',
+            'questions.*.score' => 'Điểm câu hỏi',
+            'configuration' => 'Cấu hình đề thi',
+            'configuration.has_monitoring' => 'Giám sát thi',
+            'configuration.allow_copy' => 'Cho phép sao chép',
+            'configuration.allow_print' => 'Cho phép in',
+            'configuration.is_enable_resume' => 'Cho phép tiếp tục bài thi',
+            'configuration.shuffle_questions' => 'Trộn câu hỏi',
+            'configuration.shuffle_answers' => 'Trộn đáp án',
+            'configuration.show_score' => 'Hiển thị điểm',
+            'configuration.show_detail_results' => 'Hiển thị chi tiết kết quả',
+            'configuration.is_limit_switch_tab' => 'Giới hạn chuyển tab',
+            'configuration.tab_switch_limit' => 'Số lần chuyển tab tối đa',
+            'configuration.message_on_warning' => 'Thông báo cảnh báo',
+            'configuration.limit_questions_per_page' => 'Số câu hỏi mỗi trang',
+            'configuration.allow_back_last_question' => 'Cho phép quay lại câu trước',
         ];
     }
 }

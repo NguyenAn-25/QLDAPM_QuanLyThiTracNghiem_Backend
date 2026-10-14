@@ -24,17 +24,37 @@ class StoreExamAttemptLogRequest extends FormRequest
     public function rules()
     {
         return [
-            "baiLamId" => [
+            "exam_attempt_id" => [
                 "required",
                 "integer",
-                "exists:bai_lams,id"
+                "exists:exam_attempts,id",
             ],
 
-            "soLanChuyenTab" => [
+            "tab_switch_count" => [
                 "required",
                 "integer",
-                "min:0"
+                "min:0",
             ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'exam_attempt_id.required' => 'Vui lòng chọn bài làm.',
+            'exam_attempt_id.integer' => 'Mã bài làm không hợp lệ.',
+            'exam_attempt_id.exists' => 'Bài làm không tồn tại.',
+            'tab_switch_count.required' => 'Vui lòng nhập số lần chuyển tab.',
+            'tab_switch_count.integer' => 'Số lần chuyển tab phải là số nguyên.',
+            'tab_switch_count.min' => 'Số lần chuyển tab không được nhỏ hơn 0.',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'exam_attempt_id' => 'Bài làm',
+            'tab_switch_count' => 'Số lần chuyển tab',
         ];
     }
 }

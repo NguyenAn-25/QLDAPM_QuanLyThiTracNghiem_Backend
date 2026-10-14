@@ -24,24 +24,29 @@ class StoreDifficultyRequest extends FormRequest
     public function rules()
     {
         return [
-            'tenDoKho' => ["string", "max:100", "required", Rule::unique('do_khos', 'tenDoKho')],
+            'difficulty_name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('difficulties', 'difficulty_name'),
+            ],
         ];
     }
 
     public function messages()
     {
         return [
-            'tenDoKho.string'  => ':attribute phải là chuỗi',
-            'tenDoKho.max'     => ':attribute có độ dài tối đa là 100',
-            'tenDoKho.required' => ':attribute không được để trống',
-            'tenDoKho.unique'  => ':attribute đã tồn tại trên hệ thống',
+            'difficulty_name.string' => ':attribute phải là chuỗi',
+            'difficulty_name.max' => ':attribute có độ dài tối đa là 100',
+            'difficulty_name.required' => ':attribute không được để trống',
+            'difficulty_name.unique' => ':attribute đã tồn tại trên hệ thống',
         ];
     }
 
     public function attributes()
     {
         return [
-            'tenDoKho' => 'Tên độ khó',
+            'difficulty_name' => 'Tên độ khó',
         ];
     }
 }

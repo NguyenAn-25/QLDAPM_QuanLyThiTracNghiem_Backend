@@ -40,27 +40,27 @@ class ExamQuestionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ExamQuestion $chitietdethi)
+    public function show(ExamQuestion $examQuestion)
     {
-        $data = $this->examQuestionService->getOne($chitietdethi);
+        $data = $this->examQuestionService->getOne($examQuestion);
         return $this->success($data);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateExamQuestionRequest $request, ExamQuestion $chitietdethi)
+    public function update(UpdateExamQuestionRequest $request, ExamQuestion $examQuestion)
     {
-        $chiTiet = $this->examQuestionService->update($request->validated(), $chitietdethi);
+        $chiTiet = $this->examQuestionService->update($request->validated(), $examQuestion);
         return $this->success($chiTiet);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ExamQuestion $chitietdethi)
+    public function destroy(ExamQuestion $examQuestion)
     {
-        $result = $this->examQuestionService->delete($chitietdethi);
+        $result = $this->examQuestionService->delete($examQuestion);
         return $this->success($result);
     }
 }

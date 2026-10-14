@@ -41,27 +41,27 @@ class SubjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Subject $monhoc)
+    public function show(Subject $subject)
     {
-        $data = $this->subjectService->getOne($monhoc);
+        $data = $this->subjectService->getOne($subject);
         return $this->success($data);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSubjectRequest $request, Subject $monhoc)
+    public function update(UpdateSubjectRequest $request, Subject $subject)
     {
-        $data = $this->subjectService->update($request->validated(), $monhoc);
+        $data = $this->subjectService->update($request->validated(), $subject);
         return $this->success($data);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Subject $monhoc)
+    public function destroy(Subject $subject)
     {
-        $data = $this->subjectService->delete($monhoc);
+        $data = $this->subjectService->delete($subject);
         return $this->success($data);
     }
 
