@@ -37,7 +37,7 @@ class UpdateUserRequest extends FormRequest
             ],
 
             "role_id" => ["sometimes", "numeric", "exists:roles,id", "nullable"],
-            "phone" => ["sometimes", "numeric", "digits:10"],
+            "phone" => ["sometimes", "string", "max:20"],
 
             "date_of_birth" => ["sometimes", "date_format:Y-m-d", "before:today"],
 

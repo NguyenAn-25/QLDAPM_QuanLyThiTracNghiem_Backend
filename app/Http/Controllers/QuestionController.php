@@ -86,10 +86,10 @@ class QuestionController extends Controller
     public function copyFromPublic(Request $request, Question $question)
     {
         $validated = $request->validate([
-            'nguoiTaoId' => ['required', 'integer', 'exists:users,id'],
+            'creatorId' => ['required', 'integer', 'exists:users,id'],
         ]);
 
-        $data = $this->questionService->copyFromPublic($question, (int) $validated['nguoiTaoId']);
+        $data = $this->questionService->copyFromPublic($question, (int) $validated['creatorId']);
         return $this->success($data, 201);
     }
 
