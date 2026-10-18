@@ -3,8 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\CourseGroup;
-use App\Models\MonHoc;
-use App\Models\NhomHocPhan;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Seeder;

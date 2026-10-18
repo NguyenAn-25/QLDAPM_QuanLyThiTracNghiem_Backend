@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\DeThi;
 use App\Models\Exam;
-use App\Models\MonHoc;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Seeder;

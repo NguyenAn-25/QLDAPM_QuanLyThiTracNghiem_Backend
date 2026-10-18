@@ -22,25 +22,25 @@ class RoleService
 
     public function getRoleDetail(Role $role)
     {
-        $role = Role::with('role_details.function')->findOrFail($role->id);
-        $roleDetails = $role->role_details;
+        $role = Role::with('roleDetails.function')->findOrFail($role->id);
+        $roleDetails = $role->roleDetails;
 
         $permission = $roleDetails
             ->groupBy('function_id')
             ->map(function ($items) {
                 return [
                     'function_name' => $items->first()->function->function_name,
-                    'canView'       => $items->contains('action', 'VIEW'),
-                    'canCreate'     => $items->contains('action', 'ADD'),
-                    'canUpdate'     => $items->contains('action', 'UPDATE'),
-                    'canDelete'     => $items->contains('action', 'DELETE')
+                    'can_view'       => $items->contains('action', 'VIEW'),
+                    'can_create'     => $items->contains('action', 'ADD'),
+                    'can_update'     => $items->contains('action', 'UPDATE'),
+                    'can_delete'     => $items->contains('action', 'DELETE')
                 ];
             })->values();
 
         $response = [
             "id"           => $role->id,
             "role_name"    => $role->role_name,
-            "role_details" => $permission
+            "roleDetails" => $permission
         ];
 
         return $response;
@@ -48,27 +48,27 @@ class RoleService
 
     public function getRoleDetailById(int $id)
     {
-        $role = Role::with('role_details.function')->find($id);
+        $role = Role::with('roleDetails.function')->find($id);
         if (!$role) return null;
 
-        $roleDetails = $role->role_details;
+        $roleDetails = $role->roleDetails;
 
         $permission = $roleDetails
             ->groupBy('function_id')
             ->map(function ($items) {
                 return [
                     'function_name' => $items->first()->function->function_name,
-                    'canView'       => $items->contains('action', 'VIEW'),
-                    'canCreate'     => $items->contains('action', 'ADD'),
-                    'canUpdate'     => $items->contains('action', 'UPDATE'),
-                    'canDelete'     => $items->contains('action', 'DELETE')
+                    'can_view'       => $items->contains('action', 'VIEW'),
+                    'can_create'     => $items->contains('action', 'ADD'),
+                    'can_update'     => $items->contains('action', 'UPDATE'),
+                    'can_delete'     => $items->contains('action', 'DELETE')
                 ];
             })->values();
 
         $response = [
             "id"           => $role->id,
             "role_name"    => $role->role_name,
-            "role_details" => $permission
+            "roleDetails" => $permission
         ];
 
         return $response;
@@ -77,20 +77,20 @@ class RoleService
     // *** format gửi tạo 1 phân quyền
     // {
     //   "tenNhomQuyen": "Nhân viên bán hàng",
-    //   "role_details": [
+    //   "roleDetails": [
     //     {
     //       "tenChucNang": "QL_NHOMHP",
-    //       "canView": true,
-    //       "canCreate": false,
-    //       "canUpdate": false,
-    //       "canDelete": false
+    //       "can_view": true,
+    //       "can_create": false,
+    //       "can_update": false,
+    //       "can_delete": false
     //     },
     //     {
     //       "tenChucNang": "QL_CAUHOI",
-    //       "canView": true,
-    //       "canCreate": true,
-    //       "canUpdate": false,
-    //       "canDelete": false
+    //       "can_view": true,
+    //       "can_create": true,
+    //       "can_update": false,
+    //       "can_delete": false
     //     }
     //   ]
     // }
@@ -103,13 +103,13 @@ class RoleService
                 'role_name' => $data['role_name'],
             ]);
 
-            // 2. Prepare role_details data
+            // 2. Prepare roleDetails data
             $roleDetailsData = [];
-            foreach ($data['role_details'] as $roleDetail) {
+            foreach ($data['roleDetails'] as $roleDetail) {
                 // Find function for each permission set
                 $function = FunctionModel::where('function_name', $roleDetail['function_name'])->firstOrFail();
 
-                if ($roleDetail['canView']) {
+                if ($roleDetail['can_view']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $function->id,
@@ -117,7 +117,7 @@ class RoleService
                     ];
                 }
 
-                if ($roleDetail['canCreate']) {
+                if ($roleDetail['can_create']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $function->id,
@@ -125,7 +125,7 @@ class RoleService
                     ];
                 }
 
-                if ($roleDetail['canUpdate']) {
+                if ($roleDetail['can_update']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $function->id,
@@ -133,7 +133,7 @@ class RoleService
                     ];
                 }
 
-                if ($roleDetail['canDelete']) {
+                if ($roleDetail['can_delete']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $function->id,
@@ -145,7 +145,7 @@ class RoleService
             // 3. Batch insert
             RoleDetail::insert($roleDetailsData);
 
-            return $role->load('role_details.function');
+            return $role->load('roleDetails.function');
         });
     }
 
@@ -167,12 +167,12 @@ class RoleService
             // 4. Prepare new permission data
             $roleDetailsData = [];
 
-            foreach ($data['role_details'] as $roleDetail) {
+            foreach ($data['roleDetails'] as $roleDetail) {
 
                 // Find corresponding function
                 $functionCategory = FunctionModel::where('function_name', $roleDetail['function_name'])->firstOrFail(); // NOTE: Action/tenChucNang -> FunctionModel/function_name
 
-                if ($roleDetail['canView']) {
+                if ($roleDetail['can_view']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $functionCategory->id,
@@ -180,7 +180,7 @@ class RoleService
                     ];
                 }
 
-                if ($roleDetail['canCreate']) {
+                if ($roleDetail['can_create']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $functionCategory->id,
@@ -188,7 +188,7 @@ class RoleService
                     ];
                 }
 
-                if ($roleDetail['canUpdate']) {
+                if ($roleDetail['can_update']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $functionCategory->id,
@@ -196,7 +196,7 @@ class RoleService
                     ];
                 }
 
-                if ($roleDetail['canDelete']) {
+                if ($roleDetail['can_delete']) {
                     $roleDetailsData[] = [
                         'role_id'     => $role->id,
                         'function_id' => $functionCategory->id,
@@ -210,7 +210,7 @@ class RoleService
                 RoleDetail::insert($roleDetailsData);
             }
 
-            return $role->load('role_details.function');
+            return $role->load('roleDetails.function');
         });
     }
 
@@ -234,7 +234,7 @@ class RoleService
     public function hasRole(int $id, string $permission): bool
     { // For middleware check
         $role = Role::findOrFail($id);
-        if (!$role || !isset($role['role_details'])) {
+        if (!$role || !isset($role['roleDetails'])) {
             return false; // Return false if no permissions found
         }
 
@@ -243,17 +243,17 @@ class RoleService
         [$action, $function] = $parts;
 
         $actionMap = [
-            'view'   => 'canView',
-            'create' => 'canCreate',
-            'update' => 'canUpdate',
-            'delete' => 'canDelete',
+            'view'   => 'can_view',
+            'create' => 'can_create',
+            'update' => 'can_update',
+            'delete' => 'can_delete',
         ];
 
         $field = $actionMap[$action];
 
         $roleDetailData = $this->getRoleDetail($role);
 
-        foreach ($roleDetailData["role_details"] as $detail) {
+        foreach ($roleDetailData["roleDetails"] as $detail) {
             if ($detail['function_name'] === $function) {
                 return $detail[$field]; // Returns true/false
             }

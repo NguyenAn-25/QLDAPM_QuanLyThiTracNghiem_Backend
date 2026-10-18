@@ -31,7 +31,7 @@ class PermissionMiddleware
         $hasPermission = true;
 
         foreach ($permissions as $permission) { //Phải pass hết các role yêu cầu 
-            if (!$roleService->hasRole($user->nhomQuyenId, $permission)) {
+            if (!$roleService->hasRole($user->role_id, $permission)) {
                 $hasPermission = false;
                 break;
             }

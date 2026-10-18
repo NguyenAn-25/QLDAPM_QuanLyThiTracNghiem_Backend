@@ -32,22 +32,22 @@ class StoreRoleRequest extends FormRequest
                 'exists:functions,function_name',
             ],
 
-            'role_details.*.canView' => [
+            'role_details.*.can_view' => [
                 'required',
                 'boolean',
             ],
 
-            'role_details.*.canCreate' => [
+            'role_details.*.can_create' => [
                 'required',
                 'boolean',
             ],
 
-            'role_details.*.canUpdate' => [
+            'role_details.*.can_update' => [
                 'required',
                 'boolean',
             ],
 
-            'role_details.*.canDelete' => [
+            'role_details.*.can_delete' => [
                 'required',
                 'boolean',
             ],
@@ -70,14 +70,14 @@ class StoreRoleRequest extends FormRequest
             'role_details.*.function_name.string' => ':attribute phải là chuỗi ký tự',
             'role_details.*.function_name.exists' => ':attribute không tồn tại trong hệ thống',
 
-            'role_details.*.canView.required' => ':attribute không được để trống',
-            'role_details.*.canView.boolean' => ':attribute phải là kiểu đúng/sai',
-            'role_details.*.canCreate.required' => ':attribute không được để trống',
-            'role_details.*.canCreate.boolean' => ':attribute phải là kiểu đúng/sai',
-            'role_details.*.canUpdate.required' => ':attribute không được để trống',
-            'role_details.*.canUpdate.boolean' => ':attribute phải là kiểu đúng/sai',
-            'role_details.*.canDelete.required' => ':attribute không được để trống',
-            'role_details.*.canDelete.boolean' => ':attribute phải là kiểu đúng/sai',
+            'role_details.*.can_view.required' => ':attribute không được để trống',
+            'role_details.*.can_view.boolean' => ':attribute phải là kiểu đúng/sai',
+            'role_details.*.can_create.required' => ':attribute không được để trống',
+            'role_details.*.can_create.boolean' => ':attribute phải là kiểu đúng/sai',
+            'role_details.*.can_update.required' => ':attribute không được để trống',
+            'role_details.*.can_update.boolean' => ':attribute phải là kiểu đúng/sai',
+            'role_details.*.can_delete.required' => ':attribute không được để trống',
+            'role_details.*.can_delete.boolean' => ':attribute phải là kiểu đúng/sai',
         ];
     }
 
@@ -87,10 +87,10 @@ class StoreRoleRequest extends FormRequest
             'role_name' => 'Tên nhóm quyền',
             'role_details' => 'Danh sách chi tiết quyền',
             'role_details.*.function_name' => 'Tên chức năng',
-            'role_details.*.canView' => 'Quyền xem',
-            'role_details.*.canCreate' => 'Quyền tạo',
-            'role_details.*.canUpdate' => 'Quyền cập nhật',
-            'role_details.*.canDelete' => 'Quyền xóa',
+            'role_details.*.can_view' => 'Quyền xem',
+            'role_details.*.can_create' => 'Quyền tạo',
+            'role_details.*.can_update' => 'Quyền cập nhật',
+            'role_details.*.can_delete' => 'Quyền xóa',
         ];
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\CauHoi;
-use App\Models\MonHoc;
 use App\Models\Question;
 use App\Models\Subject;
 use App\Models\User;

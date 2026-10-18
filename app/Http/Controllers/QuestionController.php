@@ -28,10 +28,10 @@ class QuestionController extends Controller
     public function index(Request $request)
     {
         $filters = [
-            'subject_id' => $request->query('monHocId'),
-            'chapter_id' => $request->query('chuongId'),
-            'difficulty_id' => $request->query('doKhoId'),
-            'creator_id' => $request->query('nguoiTaoId'),
+            'subject_id' => $request->query('subject_id'),
+            'chapter_id' => $request->query('chapter_id'),
+            'difficulty_id' => $request->query('difficulty_id'),
+            'creator_id' => $request->query('creator_id'),
             'status' => $request->query('status'),
             'keyword' => $request->query('keyword'),
             'bank' => $request->query('bank'),

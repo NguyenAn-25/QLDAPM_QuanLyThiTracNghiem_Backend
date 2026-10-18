@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\MonHoc;
 use App\Models\Subject;
 use Illuminate\Database\Seeder;
 

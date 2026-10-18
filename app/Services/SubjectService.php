@@ -9,7 +9,7 @@ class SubjectService
 {
     public function getAll()
     {
-        return Subject::all()->load("chuongs");
+        return Subject::all()->load("chapters");
     }
 
     public function getOne(Subject $subject)

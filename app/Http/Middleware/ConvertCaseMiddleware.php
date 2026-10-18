@@ -23,7 +23,13 @@ class ConvertCaseMiddleware
 
         $response = $next($request);
 
-        $contentType = $response instanceof Response ? $response->headers->get('Content-Type', '') : '';
+        if ($request->is('docs/api.json')) {
+            return $response;
+        }
+
+        $contentType = $response instanceof Response
+            ? $response->headers->get('Content-Type', '')
+            : '';
 
         if (Str::contains(strtolower($contentType), ['/json', '+json'])) {
             $content = $response->getContent();

@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\MonHoc;
-use App\Models\PhanCong;
-use App\Models\Subject;
 use App\Models\TeacherSubject;
 use Illuminate\Database\Seeder;
 
@@ -17,11 +14,6 @@ class TeacherSubjectSeeder extends Seeder
      */
     public function run()
     {
-        // Lấy giảng viên
-        // $giangVien = User::where("username", "giangvien")->first();
-
-        // $monHoc1 = Subject::where("maMonHoc", "841255")->first();
-        // $monHoc2 = Subject::where("maMonHoc", "841244")->first();
 
         $phanCongs = [
             ['teacher_id' => 2, 'subject_id' => 1],

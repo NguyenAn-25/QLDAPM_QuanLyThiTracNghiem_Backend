@@ -46,7 +46,7 @@ class AuthService
             ]);
         }
 
-        $role = $user->nhomQuyenId ? $this->roleService->getRoleDetailById($user->nhomQuyenId) : null;
+        $role = $user->role_id ? $this->roleService->getRoleDetailById($user->role_id) : null;
 
         return response()->json([
             'access_token' => $token,
@@ -106,7 +106,7 @@ class AuthService
             return (["error" => "login_failed"]);
         }
 
-        $role = $user->nhomQuyenId ? $this->roleService->getRoleDetailById($user->nhomQuyenId) : null;
+        $role = $user->role_id ? $this->roleService->getRoleDetailById($user->role_id) : null;
 
         return [
             'access_token' => $token,
@@ -127,7 +127,7 @@ class AuthService
     public function me()
     {
         $user = Auth::user();
-        $role = $user->nhomQuyenId ? $this->roleService->getRoleDetailById($user->nhomQuyenId) : null;
+        $role = $user->role_id ? $this->roleService->getRoleDetailById($user->role_id) : null;
         return response()->json([
             'token_type'   => 'bearer',
             'me' => Auth::guard('api')->user(),
